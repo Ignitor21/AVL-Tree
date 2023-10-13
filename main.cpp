@@ -5,12 +5,12 @@ using namespace avl;
 
 int main()
 {
-    AVLTree* tree = new AVLTree{};
-    tree->insert(2);
-    tree->insert(1);
-    tree->insert(3);
-
-    print_subtree(tree->root);
-    std::cout << "\n";
+    AVLTree tree{};
+    tree.insert(1);
+    tree.tree_dump();
+    tree.insert(2);
+    tree.tree_dump();
+    tree.insert(3);
+    tree.tree_dump();
     return 0;
 }
