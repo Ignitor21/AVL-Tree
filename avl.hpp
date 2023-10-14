@@ -88,6 +88,13 @@ private:
 
         if (!b->parent)
             root = b;
+        else
+        {
+            if (b->parent->left == a)
+                b->parent->left = b;
+            else
+                b->parent->right = b;
+        }
 
         if (a->left)
             a->left->parent = a;
@@ -107,6 +114,13 @@ private:
 
         if (!b->parent)
             root = b;
+        else
+        {
+            if (b->parent->left == a)
+                b->parent->left = b;
+            else
+                b->parent->right = b;
+        }
 
         if (a->left)
             a->left->parent = a;
@@ -121,12 +135,18 @@ private:
         int bf = balance_factor(p);
         if(bf == 2)
         {
+            if (get_height(p->left->right) > get_height(p->left->left))
+                p->left = rotate_left(p->left); //big left rotation
             p = rotate_right(p);
         }
+
         if(bf == -2)
         {
+            if (get_height(p->right->left) > get_height(p->right->right))
+                p->right = rotate_right(p->right); //big right rotation
             p = rotate_left(p);
         }
+
         return p; 
     }
 
@@ -172,7 +192,6 @@ public:
         }
 
         cur->parent = prev;
-        prev->height = std::max(get_height(prev->left), get_height(prev->right)) + 1;
 
         while(prev)
         {
