@@ -21,10 +21,10 @@ int main()
             std::cout << tree.find_by_number(n)->key << ' ';
             break;
         case 'n':
-            // TO-DO
+            std::cout << tree.distance(n) << ' ';
             break;
         default:
-            std::cout << "Unknown command\n";
+            std::cerr << "Unknown command\n";
             abort();
             break;
         }

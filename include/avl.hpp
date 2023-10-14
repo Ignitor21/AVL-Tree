@@ -4,9 +4,6 @@
 #include <algorithm>
 
 /* TO-DO:
-- find k-th least element
-- find number of elements less than certain number
-- cmake
 - big five
 - end-to-end tests
 - unit test
@@ -87,7 +84,7 @@ public:
     }
 
 private:
-    void FreeAVLTree(AVLNode* node)
+    void FreeAVLTree(AVLNode* node) 
     {
         if(node)
         {
@@ -97,7 +94,7 @@ private:
         }
     }
 
-    void recursive_print(AVLNode* node)
+    void recursive_print(AVLNode* node) const
     {
         if (node) 
         { 
@@ -184,7 +181,7 @@ private:
     }
 
 public:
-    void tree_dump()
+    void tree_dump() const
     {
         recursive_print(root);
         std::cout << "\n";
@@ -280,6 +277,29 @@ public:
         }
 
         return cur;
+    }
+
+    int distance(int k) const
+    {
+        int ans{};
+        AVLNode* cur{root};
+
+        while(cur)
+        {
+            if (k < cur->key)
+                cur = cur->left;
+            else if (k > cur->key)
+            {
+                ans += get_size(cur->left) + 1;
+                cur = cur->right;
+            }
+            else
+            {
+                return (ans + get_size(cur->left));
+            }
+        }
+
+        return ans;
     }
 };
 }
