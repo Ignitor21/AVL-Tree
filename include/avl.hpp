@@ -232,7 +232,10 @@ public:
             prev = balance(prev);
             prev = prev->parent;
         }
-
+        
+        #if DEBUG
+            tree_dump();
+        #endif
         return cur;
     }
 
