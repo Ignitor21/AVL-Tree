@@ -12,8 +12,18 @@ int main()
     for (const auto& x: input)
     {
         tree.insert(x);
-        tree.tree_dump();
+        //tree.tree_dump();
     }
 
+    AVLNode* node = tree.find_by_number(10);
+    if(node)
+    {
+        std::cout << node->key << "\n";
+    }
+    else
+    {
+        std::cout << "Not found\n";
+    }
+    
     return 0;
 }

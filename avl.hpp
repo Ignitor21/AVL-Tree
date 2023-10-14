@@ -3,17 +3,29 @@
 #include <iostream>
 #include <algorithm>
 
+/* TO-DO:
+- find k-th least element
+- find number of elements less than certain number
+- cmake
+- big five
+- end-to-end tests
+- unit test
+- graphviz
+- comments
+*/
+
 namespace avl
 {
 struct AVLNode
 {
     int key;
-    int height;
+    int height; // height of max subtree + 1
+    int size; // number of nodes in left subtree + right subtree + 1
     AVLNode* parent;
     AVLNode* left;
     AVLNode* right;
 
-    AVLNode(int k) : key(k), height(1), parent(nullptr), left(nullptr), right(nullptr) {}
+    AVLNode(int k) : key(k), height(1), size(1), parent(nullptr), left(nullptr), right(nullptr) {}
 };
 
 int balance_factor(AVLNode* node)
@@ -44,13 +56,30 @@ void fix_height(AVLNode* node)
     node->height = std::max(hl, hr) + 1;
 }
 
+int get_size(AVLNode* node)
+{
+    if (!node)
+        return 0; 
+    
+    return node->size;
+}
+
+void fix_size(AVLNode* node)
+{
+    if (!node)
+        return;
+    
+    int sl = get_size(node->right);
+    int sr = get_size(node->left);
+
+    node->size = sl + sr + 1;
+}
+
 class AVLTree
 {
     AVLNode* root;
-    int size;
 public:
-    AVLTree(int k) : root(new AVLNode(k)), size(1) {}
-    AVLTree() : root(nullptr), size(0) {}
+    AVLTree() : root(nullptr) {}
 
     ~AVLTree()
     {
@@ -73,7 +102,7 @@ private:
         if (node) 
         { 
             recursive_print(node->left);
-            std::cout << node->key << '(' << balance_factor(node) << ") "; 
+            std::cout << node->key << '(' << balance_factor(node) << ", " << get_size(node) << ") "; 
             recursive_print(node->right); 
         }
     }
@@ -101,6 +130,8 @@ private:
 
         fix_height(a);
         fix_height(b);
+        fix_size(a);
+        fix_size(b);
         return b;
     }
 
@@ -127,6 +158,8 @@ private:
 
         fix_height(a);
         fix_height(b);
+        fix_size(a);
+        fix_size(b);
         return b; 
     }
 
@@ -162,7 +195,7 @@ public:
         AVLNode* cur{root};
         AVLNode* prev{};
 
-        while(cur != nullptr)
+        while(cur)
         {
             prev = cur;
             if (k < cur->key)
@@ -173,7 +206,6 @@ public:
                 return cur;
         }
 
-        size++;
         cur = new AVLNode(k);
 
         if(prev == nullptr)
@@ -196,6 +228,7 @@ public:
         while(prev)
         {
             fix_height(prev);
+            fix_size(prev);
             prev = balance(prev);
             prev = prev->parent;
         }
@@ -203,6 +236,47 @@ public:
         return cur;
     }
 
-};
+    AVLNode* find(int k) const
+    {
+        AVLNode* cur{root};
 
+        while (cur)
+        {
+            if (k < cur->key)
+                cur = cur->left;
+            else if (k > cur->key)
+                cur = cur->right;
+            else
+                return cur; 
+        }
+
+        return nullptr;
+    }
+
+    AVLNode* find_by_number(int k) const
+    {
+        if (root == nullptr || k > root->size || k <= 0)
+            return nullptr;
+
+        int m = k;
+        int p = -1;
+        AVLNode* cur{root};
+
+        while(p != m)
+        {
+            p = get_size(cur->left) + 1;
+
+            if (p > m)
+                cur = cur->left;
+                
+            if (p < m)
+            {
+                cur = cur->right;
+                m -= p;
+            }
+        }
+
+        return cur;
+    }
+};
 }
