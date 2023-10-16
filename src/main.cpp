@@ -18,8 +18,14 @@ int main()
             tree.insert(n);
             break;
         case 'm':
-            std::cout << tree.find_by_number(n)->key << ' ';
+        {
+            auto pnum = tree.find_by_number(n);
+            if (pnum)
+                std::cout << pnum->key << ' ';
+            else
+                std::cout << "Invalid number\n";
             break;
+        }
         case 'n':
             std::cout << tree.distance(n) << ' ';
             break;

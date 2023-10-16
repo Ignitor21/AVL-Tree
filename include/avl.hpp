@@ -2,12 +2,10 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
 /* TO-DO:
 - big five
-- end-to-end tests
-- unit test
-- graphviz
 - comments
 */
 
@@ -150,8 +148,8 @@ private:
                 b->parent->right = b;
         }
 
-        if (a->left)
-            a->left->parent = a;
+        if (a->right)
+            a->right->parent = a;
 
         fix_height(a);
         fix_height(b);
@@ -232,6 +230,7 @@ public:
         
         #if DEBUG
             tree_dump();
+            std::cout << "Размер дерева: " << root->size << "\n";
         #endif
         return cur;
     }
@@ -255,8 +254,14 @@ public:
 
     AVLNode* find_by_number(int k) const
     {
-        if (root == nullptr || k > root->size || k <= 0)
+        if ((root == nullptr || k > root->size || k <= 0))
+        {
+            #if DEBUG
+                std::cout << "Invalid number: " << k << "\n";
+                std::cout << "Size of tree: " << root->size << "\n";
+            #endif
             return nullptr;
+        }
 
         int m = k;
         int p = -1;
