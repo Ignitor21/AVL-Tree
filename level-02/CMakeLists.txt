@@ -1,0 +1,1 @@
+add_executable(level-02 main.cpp)

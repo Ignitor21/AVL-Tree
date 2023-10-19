@@ -65,7 +65,7 @@ TEST(AVL_FUNCTIONS, find)
     EXPECT_EQ(n3, tree.find(-1));
 }
 
-TEST(AVL_FUNCTIONS, distance)
+TEST(AVL_FUNCTIONS, less_then)
 {
     AVLTree tree{};
     std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
@@ -76,16 +76,36 @@ TEST(AVL_FUNCTIONS, distance)
     }
 
     int ans1 = 7;
-    EXPECT_EQ(ans1, tree.distance(32));
+    EXPECT_EQ(ans1, tree.less_then(32));
     int ans2 = 8;
-    EXPECT_EQ(ans2, tree.distance(33));
+    EXPECT_EQ(ans2, tree.less_then(33));
     int ans3 = 10;
-    EXPECT_EQ(ans3, tree.distance(100));
+    EXPECT_EQ(ans3, tree.less_then(100));
     int ans4 = 0;
-    EXPECT_EQ(ans4, tree.distance(-5));
+    EXPECT_EQ(ans4, tree.less_then(-5));
     int ans5 = 4;
-    EXPECT_EQ(ans5, tree.distance(15));
+    EXPECT_EQ(ans5, tree.less_then(15));
 }
+
+TEST(AVL_FUNCTIONS, distance)
+{
+    AVLTree tree{};
+    std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
+
+    for (const auto& x: input)
+    {
+        tree.insert(x);
+    }
+
+    EXPECT_EQ(0, tree.distance(51, 60));
+    EXPECT_EQ(0, tree.distance(-5, 0));
+    EXPECT_EQ(0, tree.distance(1337, 228));
+    EXPECT_EQ(6, tree.distance(10, 50));
+    EXPECT_EQ(5, tree.distance(3, 27));
+    EXPECT_EQ(4, tree.distance(14, 34));
+    EXPECT_EQ(2, tree.distance(19, 28));
+}
+
 
 int main(int argc, char** argv)
 {   

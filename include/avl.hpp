@@ -284,7 +284,7 @@ public:
         return cur;
     }
 
-    int distance(int k) const
+    int less_then(int k) const
     {
         int ans{};
         AVLNode* cur{root};
@@ -301,6 +301,50 @@ public:
             else
             {
                 return (ans + get_size(cur->left));
+            }
+        }
+
+        return ans;
+    }
+
+    int distance(int lb, int ub)
+    {
+        if (lb >= ub || !root)
+            return 0;
+
+        int ans{root->size};
+        AVLNode* cur{root};
+
+        while(cur)
+        {
+            if (ub > cur->key)
+                cur = cur->right;
+            else if (ub < cur->key)
+            {
+                ans -= get_size(cur->right) + 1;
+                cur = cur->left;
+            }    
+            else
+            {
+                ans -= get_size(cur->right);
+                break;
+            }
+        }
+
+        cur = root;
+        while (cur)
+        {
+            if (lb < cur->key)
+                cur = cur->left;
+            else if (lb > cur->key)
+            {
+                ans -= get_size(cur->left) + 1;
+                cur = cur->right;
+            }
+            else
+            {
+                ans -= get_size(cur->left);
+                break;
             }
         }
 

@@ -9,6 +9,6 @@ echo -e "${GREEN}Testing has started!${NC}"
 echo
 for file in ./*.in; do
     printf "%s\n" $file
-    ../build/src/avl < $file
+    ../../build/level-02/level-02 < $file
     printf "\n" 
 done

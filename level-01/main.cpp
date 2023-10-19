@@ -7,28 +7,26 @@ using namespace avl;
 int main()
 {
     AVLTree tree{};
-    int n{};
     char command{};
 
-    while(std::cin >> command >> n)
+    while(std::cin >> command)
     {
         switch (command)
         {
         case 'k':
+        {
+            int n{};
+            std::cin >> n;
             tree.insert(n);
             break;
-        case 'm':
+        }
+        case 'q':
         {
-            auto pnum = tree.find_by_number(n);
-            if (pnum)
-                std::cout << pnum->key << ' ';
-            else
-                std::cout << "Invalid number\n";
+            int lb{}, ub{};
+            std::cin >> lb >> ub;
+            std::cout << tree.distance(lb, ub) << ' ';
             break;
         }
-        case 'n':
-            std::cout << tree.distance(n) << ' ';
-            break;
         default:
             std::cerr << "Unknown command\n";
             abort();
