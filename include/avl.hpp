@@ -2,11 +2,15 @@
 
 #include <iostream>
 #include <algorithm>
-#include <cassert>
 
 /* TO-DO:
 - big five
 - comments
+- iterators
+- comparator
+- templates
+- get rid of recursion
+- null node???
 */
 
 namespace avl
@@ -82,273 +86,289 @@ public:
     }
 
 private:
-    void FreeAVLTree(AVLNode* node) 
-    {
-        if(node)
-        {
-            FreeAVLTree(node->left);
-            FreeAVLTree(node->right);
-            delete node;
-        }
-    }
-
-    void recursive_print(AVLNode* node) const
-    {
-        if (node) 
-        { 
-            recursive_print(node->left);
-            std::cout << node->key << '(' << balance_factor(node) << ", " << get_size(node) << ") "; 
-            recursive_print(node->right); 
-        }
-    }
-
-    AVLNode* rotate_right(AVLNode* a)
-    {
-        AVLNode* b = a->left;
-        a->left = b->right;
-        b->right = a;
-        b->parent = a->parent;
-        a->parent = b;
-
-        if (!b->parent)
-            root = b;
-        else
-        {
-            if (b->parent->left == a)
-                b->parent->left = b;
-            else
-                b->parent->right = b;
-        }
-
-        if (a->left)
-            a->left->parent = a;
-
-        fix_height(a);
-        fix_height(b);
-        fix_size(a);
-        fix_size(b);
-        return b;
-    }
-
-    AVLNode* rotate_left(AVLNode* a) 
-    {
-        AVLNode* b = a->right;
-        a->right = b->left;
-        b->left = a;
-        b->parent = a->parent;
-        a->parent = b;
-
-        if (!b->parent)
-            root = b;
-        else
-        {
-            if (b->parent->left == a)
-                b->parent->left = b;
-            else
-                b->parent->right = b;
-        }
-
-        if (a->right)
-            a->right->parent = a;
-
-        fix_height(a);
-        fix_height(b);
-        fix_size(a);
-        fix_size(b);
-        return b; 
-    }
-
-    AVLNode* balance(AVLNode* p) 
-    {
-        int bf = balance_factor(p);
-        if(bf == 2)
-        {
-            if (get_height(p->left->right) > get_height(p->left->left))
-                p->left = rotate_left(p->left); //big left rotation
-            p = rotate_right(p);
-        }
-
-        if(bf == -2)
-        {
-            if (get_height(p->right->left) > get_height(p->right->right))
-                p->right = rotate_right(p->right); //big right rotation
-            p = rotate_left(p);
-        }
-
-        return p; 
-    }
+    void FreeAVLTree(AVLNode* node);
+    void recursive_print(AVLNode* node) const;
+    AVLNode* rotate_right(AVLNode* a);
+    AVLNode* rotate_left(AVLNode* a);
+    AVLNode* balance(AVLNode* p);
 
 public:
-    void tree_dump() const
+    void tree_dump() const;
+    AVLNode* insert(int k);
+    AVLNode* find(int k) const;
+    AVLNode* find_by_number(int k) const;
+    int less_then(int k) const;
+    int distance(int lb, int ub) const;
+};
+
+void AVLTree::FreeAVLTree(AVLNode* node) 
+{
+    if(node)
     {
-        recursive_print(root);
-        std::cout << "\n";
+        FreeAVLTree(node->left);
+        FreeAVLTree(node->right);
+        delete node;
+    }
+}
+
+void AVLTree::recursive_print(AVLNode* node) const
+{
+    if (node) 
+    { 
+        recursive_print(node->left);
+        std::cout << node->key << '(' << balance_factor(node) << ", " << get_size(node) << ") "; 
+        recursive_print(node->right); 
+    }
+}
+
+AVLNode* AVLTree::rotate_right(AVLNode* a)
+{
+    AVLNode* b = a->left;
+    a->left = b->right;
+    b->right = a;
+    b->parent = a->parent;
+    a->parent = b;
+
+    if (!b->parent)
+        root = b;
+    else
+    {
+        if (b->parent->left == a)
+            b->parent->left = b;
+        else
+            b->parent->right = b;
     }
 
-    AVLNode* insert(int k)
+    if (a->left)
+        a->left->parent = a;
+
+    fix_height(a);
+    fix_height(b);
+    fix_size(a);
+    fix_size(b);
+    return b;
+}
+
+AVLNode* AVLTree::rotate_left(AVLNode* a) 
+{
+    AVLNode* b = a->right;
+    a->right = b->left;
+    b->left = a;
+    b->parent = a->parent;
+    a->parent = b;
+
+    if (!b->parent)
+        root = b;
+    else
     {
-        AVLNode* cur{root};
-        AVLNode* prev{};
-
-        while(cur)
-        {
-            prev = cur;
-            if (k < cur->key)
-                cur = cur->left;
-            else if (k > cur->key)
-                cur = cur->right;
-            else
-                return cur;
-        }
-
-        cur = new AVLNode(k);
-
-        if(prev == nullptr)
-        {
-            root = cur;
-            return cur;
-        }
-
-        if (k > prev->key)
-        {
-            prev->right = cur;
-        }
+        if (b->parent->left == a)
+            b->parent->left = b;
         else
-        {
-            prev->left = cur;
-        }
+            b->parent->right = b;
+    }
 
-        cur->parent = prev;
+    if (a->right)
+        a->right->parent = a;
 
-        while(prev)
-        {
-            fix_height(prev);
-            fix_size(prev);
-            prev = balance(prev);
-            prev = prev->parent;
-        }
-        
-        #if DEBUG
-            tree_dump();
-            std::cout << "Размер дерева: " << root->size << "\n";
-        #endif
+    fix_height(a);
+    fix_height(b);
+    fix_size(a);
+    fix_size(b);
+    return b; 
+}
+
+AVLNode* AVLTree::balance(AVLNode* p) 
+{
+    int bf = balance_factor(p);
+    if(bf == 2)
+    {
+        if (get_height(p->left->right) > get_height(p->left->left))
+            p->left = rotate_left(p->left); //big left rotation
+        p = rotate_right(p);
+    }
+
+    if(bf == -2)
+    {
+        if (get_height(p->right->left) > get_height(p->right->right))
+            p->right = rotate_right(p->right); //big right rotation
+        p = rotate_left(p);
+    }
+
+    return p; 
+}
+
+void AVLTree::tree_dump() const
+{
+    recursive_print(root);
+    std::cout << "\n";
+}
+
+AVLNode* AVLTree::insert(int k)
+{
+    AVLNode* cur{root};
+    AVLNode* prev{};
+
+    while(cur)
+    {
+        prev = cur;
+        if (k < cur->key)
+            cur = cur->left;
+        else if (k > cur->key)
+            cur = cur->right;
+        else
+            return cur;
+    }
+
+    cur = new AVLNode(k);
+
+    if(prev == nullptr)
+    {
+        root = cur;
         return cur;
     }
 
-    AVLNode* find(int k) const
+    if (k > prev->key)
     {
-        AVLNode* cur{root};
+        prev->right = cur;
+    }
+    else
+    {
+        prev->left = cur;
+    }
 
-        while (cur)
-        {
-            if (k < cur->key)
-                cur = cur->left;
-            else if (k > cur->key)
-                cur = cur->right;
-            else
-                return cur; 
-        }
+    cur->parent = prev;
 
+    while(prev)
+    {
+        fix_height(prev);
+        fix_size(prev);
+        prev = balance(prev);
+        prev = prev->parent;
+    }
+    
+    #if DEBUG
+        tree_dump();
+        std::cout << "Размер дерева: " << root->size << "\n";
+    #endif
+    return cur;
+}
+
+
+AVLNode* AVLTree::find(int k) const
+{
+    AVLNode* cur{root};
+
+    while (cur)
+    {
+        if (k < cur->key)
+            cur = cur->left;
+        else if (k > cur->key)
+            cur = cur->right;
+        else
+            return cur; 
+    }
+
+    return nullptr;
+}
+
+AVLNode* AVLTree::find_by_number(int k) const
+{
+    if ((root == nullptr || k > root->size || k <= 0))
+    {
+        #if DEBUG
+            std::cout << "Invalid number: " << k << "\n";
+            std::cout << "Size of tree: " << root->size << "\n";
+        #endif
         return nullptr;
     }
 
-    AVLNode* find_by_number(int k) const
+    int m = k;
+    int p = -1;
+    AVLNode* cur{root};
+
+    while(p != m)
     {
-        if ((root == nullptr || k > root->size || k <= 0))
+        p = get_size(cur->left) + 1;
+
+        if (p > m)
+            cur = cur->left;
+            
+        if (p < m)
         {
-            #if DEBUG
-                std::cout << "Invalid number: " << k << "\n";
-                std::cout << "Size of tree: " << root->size << "\n";
-            #endif
-            return nullptr;
+            cur = cur->right;
+            m -= p;
         }
-
-        int m = k;
-        int p = -1;
-        AVLNode* cur{root};
-
-        while(p != m)
-        {
-            p = get_size(cur->left) + 1;
-
-            if (p > m)
-                cur = cur->left;
-                
-            if (p < m)
-            {
-                cur = cur->right;
-                m -= p;
-            }
-        }
-
-        return cur;
     }
 
-    int less_then(int k) const
-    {
-        int ans{};
-        AVLNode* cur{root};
-
-        while(cur)
-        {
-            if (k < cur->key)
-                cur = cur->left;
-            else if (k > cur->key)
-            {
-                ans += get_size(cur->left) + 1;
-                cur = cur->right;
-            }
-            else
-            {
-                return (ans + get_size(cur->left));
-            }
-        }
-
-        return ans;
-    }
-
-    int distance(int lb, int ub)
-    {
-        if (lb >= ub || !root)
-            return 0;
-
-        int ans{root->size};
-        AVLNode* cur{root};
-
-        while(cur)
-        {
-            if (ub > cur->key)
-                cur = cur->right;
-            else if (ub < cur->key)
-            {
-                ans -= get_size(cur->right) + 1;
-                cur = cur->left;
-            }    
-            else
-            {
-                ans -= get_size(cur->right);
-                break;
-            }
-        }
-
-        cur = root;
-        while (cur)
-        {
-            if (lb < cur->key)
-                cur = cur->left;
-            else if (lb > cur->key)
-            {
-                ans -= get_size(cur->left) + 1;
-                cur = cur->right;
-            }
-            else
-            {
-                ans -= get_size(cur->left);
-                break;
-            }
-        }
-
-        return ans;
-    }
-};
+    return cur;
 }
+
+int AVLTree::less_then(int k) const
+{
+    int ans{};
+    AVLNode* cur{root};
+
+    while(cur)
+    {
+        if (k < cur->key)
+            cur = cur->left;
+        else if (k > cur->key)
+        {
+            ans += get_size(cur->left) + 1;
+            cur = cur->right;
+        }
+        else
+        {
+            return (ans + get_size(cur->left));
+        }
+    }
+
+    return ans;
+}
+
+int AVLTree::distance(int lb, int ub) const
+{
+    if (lb >= ub || !root)
+        return 0;
+
+    int ans{root->size};
+    AVLNode* cur{root};
+
+    while(cur)
+    {
+        if (ub > cur->key)
+            cur = cur->right;
+        else if (ub < cur->key)
+        {
+            ans -= get_size(cur->right) + 1;
+            cur = cur->left;
+        }    
+        else
+        {
+            ans -= get_size(cur->right);
+            break;
+        }
+    }
+
+    cur = root;
+    while (cur)
+    {
+        if (lb < cur->key)
+            cur = cur->left;
+        else if (lb > cur->key)
+        {
+            ans -= get_size(cur->left) + 1;
+            cur = cur->right;
+        }
+        else
+        {
+            ans -= get_size(cur->left);
+            break;
+        }
+    }
+
+    return ans;
+}
+
+}
+
