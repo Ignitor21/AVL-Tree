@@ -32,6 +32,10 @@ int main()
             abort();
             break;
         }
+
+        #if DEBUG
+            tree.TreeDump();
+        #endif
     }
 
     std::cout << "\n";

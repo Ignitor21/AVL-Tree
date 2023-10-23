@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cstdlib>
 
 /* TO-DO:
 - big five
@@ -10,100 +11,85 @@
 - comparator
 - templates
 - get rid of recursion
-- null node???
 */
 
 namespace avl
 {
-struct AVLNode
-{
-    int key;
-    int height; // height of max subtree + 1
-    int size; // number of nodes in left subtree + right subtree + 1
-    AVLNode* parent;
-    AVLNode* left;
-    AVLNode* right;
-
-    AVLNode(int k) : key(k), height(1), size(1), parent(nullptr), left(nullptr), right(nullptr) {}
-};
-
-int balance_factor(AVLNode* node)
-{
-    if (!node)
-        return 0;
-    int left_height = (node->left == nullptr) ? 0 : node->left->height;
-    int right_height = (node->right == nullptr) ? 0 : node->right->height;
-
-    return left_height - right_height;
-}
-
-int get_height(AVLNode* node)
-{
-    if (!node)
-        return 0; 
-    
-    return node->height;
-}
-
-void fix_height(AVLNode* node)
-{
-    if (!node)
-        return;
-
-    int hl = get_height(node->right);
-    int hr = get_height(node->left);
-    node->height = std::max(hl, hr) + 1;
-}
-
-int get_size(AVLNode* node)
-{
-    if (!node)
-        return 0; 
-    
-    return node->size;
-}
-
-void fix_size(AVLNode* node)
-{
-    if (!node)
-        return;
-    
-    int sl = get_size(node->right);
-    int sr = get_size(node->left);
-
-    node->size = sl + sr + 1;
-}
-
 class AVLTree
 {
+private:
+    struct AVLNode
+    {
+        int key;
+        int height; // height of max subtree + 1
+        int size; // number of nodes in left subtree + right subtree + 1
+        AVLNode *parent, *left, *right;
+    };          
+
+    AVLNode* nil;
     AVLNode* root;
 public:
-    AVLTree() : root(nullptr) {}
-
-    ~AVLTree()
-    {
-        FreeAVLTree(root);
-    }
-
+    AVLTree();
+    ~AVLTree();
 private:
+    int balance_factor(AVLNode* node) const;
+    void fix_height(AVLNode* node);
+    void fix_size(AVLNode* node);
     void FreeAVLTree(AVLNode* node);
     void recursive_print(AVLNode* node) const;
     AVLNode* rotate_right(AVLNode* a);
     AVLNode* rotate_left(AVLNode* a);
     AVLNode* balance(AVLNode* p);
-
+    void TreeDraw(AVLNode* node, FILE *graph_file) const;
 public:
-    void tree_dump() const;
+    void dump() const;
     AVLNode* insert(int k);
     AVLNode* find(int k) const;
     AVLNode* find_by_number(int k) const;
     int less_then(int k) const;
     int distance(int lb, int ub) const;
+    int TreeDump() const;
 };
+
+AVLTree::AVLTree() : nil(new AVLNode{0, 0, 0, nullptr, nullptr, nullptr}), root(nil) 
+{
+    nil->parent = nil;
+    nil->left = nil;
+    nil->right = nil;
+}
+
+AVLTree::~AVLTree()
+{
+    FreeAVLTree(root);
+    delete nil;
+}
+
+int AVLTree::balance_factor(AVLNode* node) const
+{
+    int left_height = node->left->height;
+    int right_height = node->right->height;
+
+    return left_height - right_height;
+}
+
+void AVLTree::fix_height(AVLNode* node)
+{
+    int hl = node->left->height;
+    int hr = node->right->height;
+    node->height = std::max(hl, hr) + 1;
+}
+
+void AVLTree::fix_size(AVLNode* node)
+{
+    int sl = node->left->size;
+    int sr = node->right->size;
+
+    node->size = sl + sr + 1;
+}
 
 void AVLTree::FreeAVLTree(AVLNode* node) 
 {
-    if(node)
+    if(node != nil)
     {
         FreeAVLTree(node->left);
         FreeAVLTree(node->right);
@@ -113,23 +99,26 @@ void AVLTree::FreeAVLTree(AVLNode* node)
 
 void AVLTree::recursive_print(AVLNode* node) const
 {
-    if (node) 
+    if (node != nil) 
     { 
         recursive_print(node->left);
-        std::cout << node->key << '(' << balance_factor(node) << ", " << get_size(node) << ") "; 
+        std::cout << node->key << '(' << balance_factor(node) << ", " << node->size << ") "; 
         recursive_print(node->right); 
     }
 }
 
-AVLNode* AVLTree::rotate_right(AVLNode* a)
+AVLTree::AVLNode* AVLTree::rotate_right(AVLNode* a)
 {
+    if (a == nil)
+        return a;
+
     AVLNode* b = a->left;
     a->left = b->right;
     b->right = a;
     b->parent = a->parent;
     a->parent = b;
 
-    if (!b->parent)
+    if (b->parent == nil)
         root = b;
     else
     {
@@ -139,7 +128,7 @@ AVLNode* AVLTree::rotate_right(AVLNode* a)
             b->parent->right = b;
     }
 
-    if (a->left)
+    if (a->left != nil)
         a->left->parent = a;
 
     fix_height(a);
@@ -149,15 +138,18 @@ AVLNode* AVLTree::rotate_right(AVLNode* a)
     return b;
 }
 
-AVLNode* AVLTree::rotate_left(AVLNode* a) 
+AVLTree::AVLNode* AVLTree::rotate_left(AVLNode* a) 
 {
+    if (a == nil)
+        return a;
+
     AVLNode* b = a->right;
     a->right = b->left;
     b->left = a;
     b->parent = a->parent;
     a->parent = b;
 
-    if (!b->parent)
+    if (b->parent == nil)
         root = b;
     else
     {
@@ -167,7 +159,7 @@ AVLNode* AVLTree::rotate_left(AVLNode* a)
             b->parent->right = b;
     }
 
-    if (a->right)
+    if (a->right != nil)
         a->right->parent = a;
 
     fix_height(a);
@@ -177,38 +169,76 @@ AVLNode* AVLTree::rotate_left(AVLNode* a)
     return b; 
 }
 
-AVLNode* AVLTree::balance(AVLNode* p) 
+AVLTree::AVLNode* AVLTree::balance(AVLNode* p) 
 {
     int bf = balance_factor(p);
     if(bf == 2)
     {
-        if (get_height(p->left->right) > get_height(p->left->left))
+        if (p->left->right->height > p->left->left->height)
             p->left = rotate_left(p->left); //big left rotation
         p = rotate_right(p);
     }
 
     if(bf == -2)
     {
-        if (get_height(p->right->left) > get_height(p->right->right))
+        if (p->right->left->height > p->right->right->height)
             p->right = rotate_right(p->right); //big right rotation
         p = rotate_left(p);
     }
-
     return p; 
 }
 
-void AVLTree::tree_dump() const
+void AVLTree::TreeDraw(AVLNode* node, FILE *graph_file) const
+{
+
+    fprintf(graph_file, "   \"%p\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
+                        "   label = \" <value> %d\"];\n", node, node->key);
+
+    if (node->left != nil)
+    {
+        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"green\"];\n", node, node->left);
+        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"red\"];\n", node->left, node->left->parent);
+    }
+
+    else if (node->left == nil)
+    {
+        fprintf(graph_file, "   \"%p%s\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
+                            "   label = \" <value> %s\"];\n", node, "left", "nill");
+        fprintf(graph_file, "  \"%p\" -> \"%p%s\" [color = \"green\"];\n", node, node, "left");
+    }
+
+    if (node->right != nil)
+    {
+        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"green\"];\n", node, node->right);
+        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"red\"];\n", node->right, node->right->parent);
+    }
+
+    else if (node->right == nil)
+    {
+        fprintf(graph_file, "   \"%p%s\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
+                            "   label = \" <value> %s\"];\n", node, "right", "nill");
+        fprintf(graph_file, "  \"%p\" -> \"%p%s\" [color = \"green\"];\n", node, node, "right");
+    }
+
+    if (node->left != nil)
+        TreeDraw(node->left, graph_file);
+
+    if (node->right != nil)
+        TreeDraw(node->right, graph_file);
+}
+
+void AVLTree::dump() const
 {
     recursive_print(root);
     std::cout << "\n";
 }
 
-AVLNode* AVLTree::insert(int k)
+AVLTree::AVLNode* AVLTree::insert(int k)
 {
     AVLNode* cur{root};
-    AVLNode* prev{};
+    AVLNode* prev{nil};
 
-    while(cur)
+    while(cur != nil)
     {
         prev = cur;
         if (k < cur->key)
@@ -219,9 +249,9 @@ AVLNode* AVLTree::insert(int k)
             return cur;
     }
 
-    cur = new AVLNode(k);
+    cur = new AVLNode{k, 1, 1, nil, nil, nil};
 
-    if(prev == nullptr)
+    if(prev == nil)
     {
         root = cur;
         return cur;
@@ -238,27 +268,22 @@ AVLNode* AVLTree::insert(int k)
 
     cur->parent = prev;
 
-    while(prev)
+    while(prev != nil)
     {
         fix_height(prev);
         fix_size(prev);
         prev = balance(prev);
         prev = prev->parent;
     }
-    
-    #if DEBUG
-        tree_dump();
-        std::cout << "Размер дерева: " << root->size << "\n";
-    #endif
     return cur;
 }
 
 
-AVLNode* AVLTree::find(int k) const
+AVLTree::AVLNode* AVLTree::find(int k) const
 {
     AVLNode* cur{root};
 
-    while (cur)
+    while (cur != nil)
     {
         if (k < cur->key)
             cur = cur->left;
@@ -268,18 +293,18 @@ AVLNode* AVLTree::find(int k) const
             return cur; 
     }
 
-    return nullptr;
+    return nil;
 }
 
-AVLNode* AVLTree::find_by_number(int k) const
+AVLTree::AVLNode* AVLTree::find_by_number(int k) const
 {
-    if ((root == nullptr || k > root->size || k <= 0))
+    if ((root == nil || k > root->size || k <= 0))
     {
         #if DEBUG
             std::cout << "Invalid number: " << k << "\n";
             std::cout << "Size of tree: " << root->size << "\n";
         #endif
-        return nullptr;
+        return nil;
     }
 
     int m = k;
@@ -288,7 +313,7 @@ AVLNode* AVLTree::find_by_number(int k) const
 
     while(p != m)
     {
-        p = get_size(cur->left) + 1;
+        p = cur->left->size + 1;
 
         if (p > m)
             cur = cur->left;
@@ -308,18 +333,18 @@ int AVLTree::less_then(int k) const
     int ans{};
     AVLNode* cur{root};
 
-    while(cur)
+    while(cur != nil)
     {
         if (k < cur->key)
             cur = cur->left;
         else if (k > cur->key)
         {
-            ans += get_size(cur->left) + 1;
+            ans += cur->left->size + 1;
             cur = cur->right;
         }
         else
         {
-            return (ans + get_size(cur->left));
+            return (ans + cur->left->size);
         }
     }
 
@@ -328,46 +353,82 @@ int AVLTree::less_then(int k) const
 
 int AVLTree::distance(int lb, int ub) const
 {
-    if (lb >= ub || !root)
+    if (lb >= ub)
         return 0;
 
     int ans{root->size};
     AVLNode* cur{root};
 
-    while(cur)
+    while(cur != nil)
     {
         if (ub > cur->key)
             cur = cur->right;
         else if (ub < cur->key)
         {
-            ans -= get_size(cur->right) + 1;
+            ans -= cur->right->size + 1;
             cur = cur->left;
         }    
         else
         {
-            ans -= get_size(cur->right);
+            ans -= cur->right->size;
             break;
         }
     }
 
     cur = root;
-    while (cur)
+    while (cur != nil)
     {
         if (lb < cur->key)
             cur = cur->left;
         else if (lb > cur->key)
         {
-            ans -= get_size(cur->left) + 1;
+            ans -= cur->left->size + 1;
             cur = cur->right;
         }
         else
         {
-            ans -= get_size(cur->left);
+            ans -= cur->left->size;
             break;
         }
     }
 
     return ans;
+}
+
+int AVLTree::TreeDump() const
+{
+
+    FILE *graph_file = fopen("../../graphics/graph.dot", "w");
+
+    if (graph_file == nullptr)
+    {
+        std::cerr << "Failed openning graph file in " << __PRETTY_FUNCTION__ << std::endl;
+        return -1; 
+    }
+
+    fprintf(graph_file, "digraph Tree\n{\n");
+    fprintf(graph_file, "   rankdir = HR;\n");
+    fprintf(graph_file, "   node[fontsize=14];\n   edge[color=\"black\",fontcolor=\"blue\",fontsize=12];\n");
+    fprintf(graph_file, "   tree[shape = Mrecord, style = filled, fillcolor = \"chartreuse1\", "
+                        "label = \"My Tree | size = %u\"];\n", root->size);
+    TreeDraw(root, graph_file);
+    fprintf(graph_file, "   tree -> \"%p\" [color = \"gray0\"];\n", root);
+    fprintf(graph_file, "}");
+
+    if (fclose(graph_file) == EOF)
+    {
+        std::cerr << "Failed closing graph.dot in function " << __PRETTY_FUNCTION__ << std::endl;
+        return -1;
+    }
+
+    char call_graph[100] = " ";
+
+    static int graph_num = 1;
+    sprintf(call_graph, "dot ../../graphics/graph.dot -Tpng -o ../../graphics/graph%d.png", graph_num++);
+    
+    std::system(call_graph);
+
+    return 0;
 }
 
 }

@@ -10,10 +10,10 @@ using namespace avl;
 TEST(AVL_FUNCTIONS, insert)
 {
     AVLTree tree{};
-    AVLNode* n1 = tree.insert(1337);
-    AVLNode* n2 = tree.insert(228);
-    AVLNode* n3 = tree.insert(-1);
-    AVLNode* n4 = tree.insert(21);
+    auto n1 = tree.insert(1337);
+    auto n2 = tree.insert(228);
+    auto n3 = tree.insert(-1);
+    auto n4 = tree.insert(21);
 
     EXPECT_EQ(n1->height, 1);
     EXPECT_EQ(n2->height, 3);
@@ -53,9 +53,9 @@ TEST(AVL_FUNCTIONS, find_by_number)
 TEST(AVL_FUNCTIONS, find)
 {
     AVLTree tree{};
-    AVLNode* n1 = tree.insert(1337);
-    AVLNode* n2 = tree.insert(228);
-    AVLNode* n3 = tree.insert(-1);
+    auto n1 = tree.insert(1337);
+    auto n2 = tree.insert(228);
+    auto n3 = tree.insert(-1);
     tree.insert(21);
     tree.insert(1487);
 
