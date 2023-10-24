@@ -10,7 +10,6 @@
 - iterators
 - comparator
 - templates
-- get rid of recursion
 */
 
 namespace avl
@@ -35,14 +34,11 @@ private:
     int balance_factor(AVLNode* node) const;
     void fix_height(AVLNode* node);
     void fix_size(AVLNode* node);
-    void FreeAVLTree(AVLNode* node);
-    void recursive_print(AVLNode* node) const;
     AVLNode* rotate_right(AVLNode* a);
     AVLNode* rotate_left(AVLNode* a);
     AVLNode* balance(AVLNode* p);
     void TreeDraw(AVLNode* node, FILE *graph_file) const;
 public:
-    void dump() const;
     AVLNode* insert(int k);
     AVLNode* find(int k) const;
     AVLNode* find_by_number(int k) const;
@@ -60,8 +56,29 @@ AVLTree::AVLTree() : nil(new AVLNode{0, 0, 0, nullptr, nullptr, nullptr}), root(
 
 AVLTree::~AVLTree()
 {
-    FreeAVLTree(root);
-    delete nil;
+    AVLNode* cur = root;
+
+    while(cur != nil)
+    {
+        if (cur->left != nil)
+            cur = cur->left;
+        else if (cur->right != nil)
+            cur = cur->right;
+        else
+        {
+            AVLNode* cur_parent = cur->parent;
+
+            if (cur == cur_parent->left)
+                cur_parent->left = nil;
+            else
+                cur_parent->right = nil;
+
+            delete cur;
+            cur = cur_parent;
+        }
+    }
+
+    delete nil;   
 }
 
 int AVLTree::balance_factor(AVLNode* node) const
@@ -85,26 +102,6 @@ void AVLTree::fix_size(AVLNode* node)
     int sr = node->right->size;
 
     node->size = sl + sr + 1;
-}
-
-void AVLTree::FreeAVLTree(AVLNode* node) 
-{
-    if(node != nil)
-    {
-        FreeAVLTree(node->left);
-        FreeAVLTree(node->right);
-        delete node;
-    }
-}
-
-void AVLTree::recursive_print(AVLNode* node) const
-{
-    if (node != nil) 
-    { 
-        recursive_print(node->left);
-        std::cout << node->key << '(' << balance_factor(node) << ", " << node->size << ") "; 
-        recursive_print(node->right); 
-    }
 }
 
 AVLTree::AVLNode* AVLTree::rotate_right(AVLNode* a)
@@ -225,12 +222,6 @@ void AVLTree::TreeDraw(AVLNode* node, FILE *graph_file) const
 
     if (node->right != nil)
         TreeDraw(node->right, graph_file);
-}
-
-void AVLTree::dump() const
-{
-    recursive_print(root);
-    std::cout << "\n";
 }
 
 AVLTree::AVLNode* AVLTree::insert(int k)
