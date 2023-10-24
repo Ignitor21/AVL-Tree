@@ -9,7 +9,7 @@ using namespace avl;
 
 TEST(AVL_FUNCTIONS, insert)
 {
-    AVLTree tree{};
+    AVLTree<int> tree{};
     auto n1 = tree.insert(1337);
     auto n2 = tree.insert(228);
     auto n3 = tree.insert(-1);
@@ -28,7 +28,7 @@ TEST(AVL_FUNCTIONS, insert)
 
 TEST(AVL_FUNCTIONS, find_by_number)
 {
-    AVLTree tree{};
+    AVLTree<int> tree{};
     std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
     // 1 8 9 13 15 21 28 32 36 88
     for (const auto& x: input)
@@ -52,7 +52,7 @@ TEST(AVL_FUNCTIONS, find_by_number)
 
 TEST(AVL_FUNCTIONS, find)
 {
-    AVLTree tree{};
+    AVLTree<int> tree{};
     auto n1 = tree.insert(1337);
     auto n2 = tree.insert(228);
     auto n3 = tree.insert(-1);
@@ -65,9 +65,9 @@ TEST(AVL_FUNCTIONS, find)
     EXPECT_EQ(n3, tree.find(-1));
 }
 
-TEST(AVL_FUNCTIONS, less_then)
+TEST(AVL_FUNCTIONS, less_than)
 {
-    AVLTree tree{};
+    AVLTree<int> tree{};
     std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
 
     for (const auto& x: input)
@@ -76,20 +76,20 @@ TEST(AVL_FUNCTIONS, less_then)
     }
 
     int ans1 = 7;
-    EXPECT_EQ(ans1, tree.less_then(32));
+    EXPECT_EQ(ans1, tree.less_than(32));
     int ans2 = 8;
-    EXPECT_EQ(ans2, tree.less_then(33));
+    EXPECT_EQ(ans2, tree.less_than(33));
     int ans3 = 10;
-    EXPECT_EQ(ans3, tree.less_then(100));
+    EXPECT_EQ(ans3, tree.less_than(100));
     int ans4 = 0;
-    EXPECT_EQ(ans4, tree.less_then(-5));
+    EXPECT_EQ(ans4, tree.less_than(-5));
     int ans5 = 4;
-    EXPECT_EQ(ans5, tree.less_then(15));
+    EXPECT_EQ(ans5, tree.less_than(15));
 }
 
 TEST(AVL_FUNCTIONS, distance)
 {
-    AVLTree tree{};
+    AVLTree<int> tree{};
     std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
 
     for (const auto& x: input)

@@ -1,12 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <functional>
 #include "avl.hpp"
 
 using namespace avl;
 
 int main()
 {
-    AVLTree tree{};
+    AVLTree<int> tree{};
     int n{};
     char command{};
 
@@ -27,7 +28,7 @@ int main()
             break;
         }
         case 'n':
-            std::cout << tree.less_then(n) << ' ';
+            std::cout << tree.less_than(n) << ' ';
             break;
         default:
             std::cerr << "Unknown command\n";

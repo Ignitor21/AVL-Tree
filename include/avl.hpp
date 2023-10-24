@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#include <functional>
 
 /* TO-DO:
 - big five
@@ -14,12 +15,13 @@
 
 namespace avl
 {
+template <typename T, typename Comp = std::less<T>>
 class AVLTree
 {
 private:
     struct AVLNode
     {
-        int key;
+        T key;
         int height; // height of max subtree + 1
         int size; // number of nodes in left subtree + right subtree + 1
         AVLNode *parent, *left, *right;
@@ -39,22 +41,24 @@ private:
     AVLNode* balance(AVLNode* p);
     void TreeDraw(AVLNode* node, FILE *graph_file) const;
 public:
-    AVLNode* insert(int k);
-    AVLNode* find(int k) const;
+    AVLNode* insert(T k);
+    AVLNode* find(T k) const;
     AVLNode* find_by_number(int k) const;
-    int less_then(int k) const;
-    int distance(int lb, int ub) const;
+    int less_than(T k) const;
+    int distance(T lb, T ub) const;
     int TreeDump() const;
 };
 
-AVLTree::AVLTree() : nil(new AVLNode{0, 0, 0, nullptr, nullptr, nullptr}), root(nil) 
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLTree() : nil(new AVLNode{T{}, 0, 0, nullptr, nullptr, nullptr}), root(nil) 
 {
     nil->parent = nil;
     nil->left = nil;
     nil->right = nil;
 }
 
-AVLTree::~AVLTree()
+template <typename T, typename Comp>
+AVLTree<T, Comp>::~AVLTree()
 {
     AVLNode* cur = root;
 
@@ -81,7 +85,8 @@ AVLTree::~AVLTree()
     delete nil;   
 }
 
-int AVLTree::balance_factor(AVLNode* node) const
+template <typename T, typename Comp>
+int AVLTree<T, Comp>::balance_factor(AVLNode* node) const
 {
     int left_height = node->left->height;
     int right_height = node->right->height;
@@ -89,14 +94,16 @@ int AVLTree::balance_factor(AVLNode* node) const
     return left_height - right_height;
 }
 
-void AVLTree::fix_height(AVLNode* node)
+template <typename T, typename Comp>
+void AVLTree<T, Comp>::fix_height(AVLNode* node)
 {
     int hl = node->left->height;
     int hr = node->right->height;
     node->height = std::max(hl, hr) + 1;
 }
 
-void AVLTree::fix_size(AVLNode* node)
+template <typename T, typename Comp>
+void AVLTree<T, Comp>::fix_size(AVLNode* node)
 {
     int sl = node->left->size;
     int sr = node->right->size;
@@ -104,7 +111,8 @@ void AVLTree::fix_size(AVLNode* node)
     node->size = sl + sr + 1;
 }
 
-AVLTree::AVLNode* AVLTree::rotate_right(AVLNode* a)
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_right(AVLNode* a)
 {
     if (a == nil)
         return a;
@@ -135,7 +143,8 @@ AVLTree::AVLNode* AVLTree::rotate_right(AVLNode* a)
     return b;
 }
 
-AVLTree::AVLNode* AVLTree::rotate_left(AVLNode* a) 
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_left(AVLNode* a) 
 {
     if (a == nil)
         return a;
@@ -166,7 +175,8 @@ AVLTree::AVLNode* AVLTree::rotate_left(AVLNode* a)
     return b; 
 }
 
-AVLTree::AVLNode* AVLTree::balance(AVLNode* p) 
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::balance(AVLNode* p) 
 {
     int bf = balance_factor(p);
     if(bf == 2)
@@ -185,7 +195,8 @@ AVLTree::AVLNode* AVLTree::balance(AVLNode* p)
     return p; 
 }
 
-void AVLTree::TreeDraw(AVLNode* node, FILE *graph_file) const
+template <typename T, typename Comp>
+void AVLTree<T, Comp>::TreeDraw(AVLNode* node, FILE *graph_file) const
 {
 
     fprintf(graph_file, "   \"%p\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
@@ -224,7 +235,8 @@ void AVLTree::TreeDraw(AVLNode* node, FILE *graph_file) const
         TreeDraw(node->right, graph_file);
 }
 
-AVLTree::AVLNode* AVLTree::insert(int k)
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(T k)
 {
     AVLNode* cur{root};
     AVLNode* prev{nil};
@@ -232,12 +244,13 @@ AVLTree::AVLNode* AVLTree::insert(int k)
     while(cur != nil)
     {
         prev = cur;
-        if (k < cur->key)
+
+        if (Comp()(k, cur->key))
             cur = cur->left;
-        else if (k > cur->key)
-            cur = cur->right;
+        else if (prev->key == k)
+                return prev;
         else
-            return cur;
+            cur = cur->right;
     }
 
     cur = new AVLNode{k, 1, 1, nil, nil, nil};
@@ -248,14 +261,10 @@ AVLTree::AVLNode* AVLTree::insert(int k)
         return cur;
     }
 
-    if (k > prev->key)
-    {
-        prev->right = cur;
-    }
-    else
-    {
+    if (Comp()(k, prev->key))
         prev->left = cur;
-    }
+    else
+        prev->right = cur;
 
     cur->parent = prev;
 
@@ -269,25 +278,26 @@ AVLTree::AVLNode* AVLTree::insert(int k)
     return cur;
 }
 
-
-AVLTree::AVLNode* AVLTree::find(int k) const
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find(T k) const
 {
     AVLNode* cur{root};
 
     while (cur != nil)
     {
-        if (k < cur->key)
+        if (Comp()(k, cur->key))
             cur = cur->left;
-        else if (k > cur->key)
-            cur = cur->right;
+        else if (cur->key == k)
+            return cur;
         else
-            return cur; 
+            cur = cur->right;
     }
 
     return nil;
 }
 
-AVLTree::AVLNode* AVLTree::find_by_number(int k) const
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(int k) const
 {
     if ((root == nil || k > root->size || k <= 0))
     {
@@ -319,30 +329,30 @@ AVLTree::AVLNode* AVLTree::find_by_number(int k) const
     return cur;
 }
 
-int AVLTree::less_then(int k) const
+template <typename T, typename Comp>
+int AVLTree<T, Comp>::less_than(T k) const
 {
     int ans{};
     AVLNode* cur{root};
 
     while(cur != nil)
     {
-        if (k < cur->key)
+        if (Comp()(k, cur->key))
             cur = cur->left;
-        else if (k > cur->key)
+        else if (cur->key == k)
+            return (ans + cur->left->size);
+        else
         {
             ans += cur->left->size + 1;
             cur = cur->right;
-        }
-        else
-        {
-            return (ans + cur->left->size);
         }
     }
 
     return ans;
 }
 
-int AVLTree::distance(int lb, int ub) const
+template <typename T, typename Comp>
+int AVLTree<T, Comp>::distance(T lb, T ub) const //upper bound and lower bound
 {
     if (lb >= ub)
         return 0;
@@ -352,41 +362,42 @@ int AVLTree::distance(int lb, int ub) const
 
     while(cur != nil)
     {
-        if (ub > cur->key)
+        if (Comp()(cur->key, ub))
             cur = cur->right;
-        else if (ub < cur->key)
-        {
-            ans -= cur->right->size + 1;
-            cur = cur->left;
-        }    
-        else
+        else if (cur->key == ub)
         {
             ans -= cur->right->size;
             break;
         }
+        else
+        {
+            ans -= cur->right->size + 1;
+            cur = cur->left;
+        }    
     }
 
     cur = root;
     while (cur != nil)
     {
-        if (lb < cur->key)
+        if (Comp()(lb, cur->key))
             cur = cur->left;
-        else if (lb > cur->key)
-        {
-            ans -= cur->left->size + 1;
-            cur = cur->right;
-        }
-        else
+        else if (lb == cur->key)
         {
             ans -= cur->left->size;
             break;
+        }
+        else
+        {
+            ans -= cur->left->size + 1;
+            cur = cur->right;
         }
     }
 
     return ans;
 }
 
-int AVLTree::TreeDump() const
+template <typename T, typename Comp>
+int AVLTree<T, Comp>::TreeDump() const
 {
 
     FILE *graph_file = fopen("../../graphics/graph.dot", "w");

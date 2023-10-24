@@ -1,12 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <functional>
 #include "avl.hpp"
 
 using namespace avl;
 
 int main()
 {
-    AVLTree tree{};
+    AVLTree<int, std::greater<int>> tree{};
     char command{};
 
     while(std::cin >> command)
