@@ -9,8 +9,6 @@
 - big five
 - comments
 - iterators
-- comparator
-- templates
 */
 
 namespace avl
@@ -33,19 +31,19 @@ public:
     AVLTree();
     ~AVLTree();
 private:
-    int balance_factor(AVLNode* node) const;
-    void fix_height(AVLNode* node);
-    void fix_size(AVLNode* node);
-    AVLNode* rotate_right(AVLNode* a);
-    AVLNode* rotate_left(AVLNode* a);
+    int balance_factor(const AVLNode* const node) const;
+    void fix_height(AVLNode* const node);
+    void fix_size(AVLNode* const node);
+    AVLNode* rotate_right(AVLNode* const a);
+    AVLNode* rotate_left(AVLNode* const a);
     AVLNode* balance(AVLNode* p);
-    void TreeDraw(AVLNode* node, FILE *graph_file) const;
+    void TreeDraw(const AVLNode* const node, const FILE* const graph_file) const;
 public:
-    AVLNode* insert(T k);
-    AVLNode* find(T k) const;
-    AVLNode* find_by_number(int k) const;
-    int less_than(T k) const;
-    int distance(T lb, T ub) const;
+    AVLNode* insert(const T& k);
+    AVLNode* find(const T& k) const;
+    AVLNode* find_by_number(const int k) const;
+    int less_than(const T& k) const;
+    int distance(T& lb, T& ub) const;
     int TreeDump() const;
 };
 
@@ -86,7 +84,7 @@ AVLTree<T, Comp>::~AVLTree()
 }
 
 template <typename T, typename Comp>
-int AVLTree<T, Comp>::balance_factor(AVLNode* node) const
+int AVLTree<T, Comp>::balance_factor(const AVLNode* const node) const
 {
     int left_height = node->left->height;
     int right_height = node->right->height;
@@ -95,7 +93,7 @@ int AVLTree<T, Comp>::balance_factor(AVLNode* node) const
 }
 
 template <typename T, typename Comp>
-void AVLTree<T, Comp>::fix_height(AVLNode* node)
+void AVLTree<T, Comp>::fix_height(AVLNode* const node)
 {
     int hl = node->left->height;
     int hr = node->right->height;
@@ -103,7 +101,7 @@ void AVLTree<T, Comp>::fix_height(AVLNode* node)
 }
 
 template <typename T, typename Comp>
-void AVLTree<T, Comp>::fix_size(AVLNode* node)
+void AVLTree<T, Comp>::fix_size(AVLNode* const node)
 {
     int sl = node->left->size;
     int sr = node->right->size;
@@ -112,7 +110,7 @@ void AVLTree<T, Comp>::fix_size(AVLNode* node)
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_right(AVLNode* a)
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_right(AVLNode* const a)
 {
     if (a == nil)
         return a;
@@ -144,7 +142,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_right(AVLNode* a)
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_left(AVLNode* a) 
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::rotate_left(AVLNode* const a) 
 {
     if (a == nil)
         return a;
@@ -196,7 +194,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::balance(AVLNode* p)
 }
 
 template <typename T, typename Comp>
-void AVLTree<T, Comp>::TreeDraw(AVLNode* node, FILE *graph_file) const
+void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, const FILE* const graph_file) const
 {
 
     fprintf(graph_file, "   \"%p\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
@@ -236,7 +234,7 @@ void AVLTree<T, Comp>::TreeDraw(AVLNode* node, FILE *graph_file) const
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(T k)
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(const T& k)
 {
     AVLNode* cur{root};
     AVLNode* prev{nil};
@@ -279,7 +277,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(T k)
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find(T k) const
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find(const T& k) const
 {
     AVLNode* cur{root};
 
@@ -297,7 +295,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find(T k) const
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(int k) const
+AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(const int k) const
 {
     if ((root == nil || k > root->size || k <= 0))
     {
@@ -330,7 +328,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(int k) const
 }
 
 template <typename T, typename Comp>
-int AVLTree<T, Comp>::less_than(T k) const
+int AVLTree<T, Comp>::less_than(const T& k) const
 {
     int ans{};
     AVLNode* cur{root};
@@ -352,13 +350,17 @@ int AVLTree<T, Comp>::less_than(T k) const
 }
 
 template <typename T, typename Comp>
-int AVLTree<T, Comp>::distance(T lb, T ub) const //upper bound and lower bound
+int AVLTree<T, Comp>::distance(T& lb, T& ub) const //upper bound and lower bound
 {
     if (lb >= ub)
         return 0;
 
     int ans{root->size};
     AVLNode* cur{root};
+
+    bool is_inverse = !Comp()(lb, ub);
+    if (is_inverse)
+        std::swap(lb, ub);
 
     while(cur != nil)
     {
@@ -393,6 +395,9 @@ int AVLTree<T, Comp>::distance(T lb, T ub) const //upper bound and lower bound
         }
     }
 
+    if (is_inverse)
+        std::swap(lb, ub);
+        
     return ans;
 }
 

@@ -7,7 +7,7 @@ using namespace avl;
 
 int main()
 {
-    AVLTree<int, std::greater<int>> tree{};
+    AVLTree<int, std::less<int>> tree{};
     char command{};
 
     while(std::cin >> command)
