@@ -6,9 +6,9 @@
 #include <functional>
 
 /* TO-DO:
-- big five
 - comments
 - iterators
+- unit tests for big five
 */
 
 namespace avl
@@ -30,6 +30,30 @@ private:
 public:
     AVLTree();
     ~AVLTree();
+    AVLTree(const AVLTree& other);
+    AVLTree(AVLTree&& other);
+
+    AVLTree& operator= (const AVLTree& other)
+    {
+        if (this == &other)
+            return *this;
+
+        AVLTree<T, Comp> tmp{other};
+        std::swap(root, tmp.root);
+        std::swap(nil, tmp.nil);
+        return *this;
+    }
+
+    AVLTree& operator= (AVLTree&& other)
+    {
+        if (this == &other)
+            return *this;
+
+        std::swap(root, other.root);
+        std::swap(nil, other.nil);
+        return *this;
+    }
+
 private:
     int balance_factor(const AVLNode* const node) const;
     void fix_height(AVLNode* const node);
@@ -37,13 +61,13 @@ private:
     AVLNode* rotate_right(AVLNode* const a);
     AVLNode* rotate_left(AVLNode* const a);
     AVLNode* balance(AVLNode* p);
-    void TreeDraw(const AVLNode* const node, const FILE* const graph_file) const;
+    void TreeDraw(const AVLNode* const node, FILE* const graph_file) const;
 public:
     AVLNode* insert(const T& k);
     AVLNode* find(const T& k) const;
     AVLNode* find_by_number(const int k) const;
     int less_than(const T& k) const;
-    int distance(T& lb, T& ub) const;
+    int distance(const T& lower_bound, const T& upper_bound) const;
     int TreeDump() const;
 };
 
@@ -81,6 +105,50 @@ AVLTree<T, Comp>::~AVLTree()
     }
 
     delete nil;   
+}
+
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLTree(const AVLTree& other)
+{
+    nil = new AVLNode{T{}, 0, 0, nullptr, nullptr, nullptr};
+    nil->parent = nil;
+    nil->left = nil;
+    nil->right = nil;
+
+    AVLNode* other_cur = other.root;
+    root = new AVLNode{other_cur->key, other_cur->height, other_cur->size, nil, nil, nil};
+    AVLNode *cur = root, *other_nil = other.nil;
+
+    while(other_cur != other.nil)
+    {
+        if (other_cur->left != other_nil && cur->left == nil)
+        {
+            cur->left = new AVLNode{other_cur->left->key, other_cur->left->height, other_cur->left->size, cur, nil, nil};
+            other_cur = other_cur->left;
+            cur = cur->left; 
+        }
+
+        else if (other_cur->right != other_nil && cur->right == nil)
+        {
+            cur->right = new AVLNode{other_cur->right->key, other_cur->right->height, other_cur->right->size, cur, nil, nil};
+            other_cur = other_cur->right;
+            cur = cur->right;
+        }
+        else
+        {
+            other_cur = other_cur->parent;
+            cur = cur->parent;
+        }
+    }
+}
+
+template <typename T, typename Comp>
+AVLTree<T, Comp>::AVLTree(AVLTree&& other)
+{
+    root = other.root;
+    nil = other.nil;
+    other.root = nullptr;
+    other.nil = nullptr;
 }
 
 template <typename T, typename Comp>
@@ -194,7 +262,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::balance(AVLNode* p)
 }
 
 template <typename T, typename Comp>
-void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, const FILE* const graph_file) const
+void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, FILE* const graph_file) const
 {
 
     fprintf(graph_file, "   \"%p\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
@@ -350,11 +418,13 @@ int AVLTree<T, Comp>::less_than(const T& k) const
 }
 
 template <typename T, typename Comp>
-int AVLTree<T, Comp>::distance(T& lb, T& ub) const //upper bound and lower bound
+int AVLTree<T, Comp>::distance(const T& lower_bound, const T& upper_bound) const
 {
-    if (lb >= ub)
+    if (lower_bound >= upper_bound)
         return 0;
 
+    T lb = lower_bound;
+    T ub = upper_bound;
     int ans{root->size};
     AVLNode* cur{root};
 
