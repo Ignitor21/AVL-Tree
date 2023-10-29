@@ -7,8 +7,8 @@
 
 /* TO-DO:
 - comments
-- iterators
-- unit tests for big five
+- unit-tests for big five
+- update comapring script
 */
 
 namespace avl
@@ -23,6 +23,91 @@ private:
         int height; // height of max subtree + 1
         int size; // number of nodes in left subtree + right subtree + 1
         AVLNode *parent, *left, *right;
+    };
+
+    class MyIterator
+    {
+    private:
+        AVLNode *node;
+    public:
+        MyIterator(AVLNode* ptr) : node(ptr) {}
+
+        const T& operator*() const
+        {
+            if (node->size == 0)
+            {
+                std::cerr << "Bruh, man, stop dereferencing invalid pointers!\n";
+                abort();
+            }
+
+            return node->key;
+        }
+
+        MyIterator& operator++()
+        {
+            if (node->right->size != 0)
+            {
+                node = node->right;
+
+                while(node->left->size != 0)
+                    node = node->left;
+            }
+            else
+            {
+                while(node->parent->size != 0 && node->parent->right == node)
+                {
+                    node = node->parent;
+                }
+                node = node->parent;
+            }
+
+            return *this;
+        }
+
+        MyIterator operator++(int)
+        {
+            MyIterator tmp{*this};
+            ++(*this);
+            return tmp;
+        }
+
+        MyIterator& operator--()
+        {
+            if (node->left->size != 0)
+            {
+                node = node->left;
+
+                while(node->right->size != 0)
+                    node = node->right;
+            }
+            else
+            {
+                while(node->parent->size != 0 && node->parent->left == node)
+                {
+                    node = node->parent;
+                }
+                node = node->parent;
+            }
+
+            return *this;
+        }
+
+        MyIterator operator--(int)
+        {
+            MyIterator tmp{*this};
+            --(*this);
+            return tmp;
+        }
+
+        bool operator ==(const MyIterator& rhs) const
+        {
+            return (node == rhs.node);
+        }
+
+        bool operator !=(const MyIterator& rhs) const
+        {
+            return (node != rhs.node);
+        }
     };          
 
     AVLNode* nil;
@@ -63,12 +148,14 @@ private:
     AVLNode* balance(AVLNode* p);
     void TreeDraw(const AVLNode* const node, FILE* const graph_file) const;
 public:
-    AVLNode* insert(const T& k);
-    AVLNode* find(const T& k) const;
-    AVLNode* find_by_number(const int k) const;
+    MyIterator insert(const T& k);
+    MyIterator find(const T& k) const;
+    MyIterator find_by_number(const int k) const;
     int less_than(const T& k) const;
     int distance(const T& lower_bound, const T& upper_bound) const;
     int TreeDump() const;
+    MyIterator begin();
+    MyIterator end();
 };
 
 template <typename T, typename Comp>
@@ -302,7 +389,7 @@ void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, FILE* const graph_fil
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(const T& k)
+AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::insert(const T& k)
 {
     AVLNode* cur{root};
     AVLNode* prev{nil};
@@ -314,7 +401,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(const T& k)
         if (Comp()(k, cur->key))
             cur = cur->left;
         else if (prev->key == k)
-                return prev;
+                return MyIterator{prev};
         else
             cur = cur->right;
     }
@@ -324,7 +411,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(const T& k)
     if(prev == nil)
     {
         root = cur;
-        return cur;
+        return MyIterator{cur};
     }
 
     if (Comp()(k, prev->key))
@@ -341,11 +428,11 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::insert(const T& k)
         prev = balance(prev);
         prev = prev->parent;
     }
-    return cur;
+    return MyIterator{cur};
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find(const T& k) const
+AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::find(const T& k) const
 {
     AVLNode* cur{root};
 
@@ -354,16 +441,16 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find(const T& k) const
         if (Comp()(k, cur->key))
             cur = cur->left;
         else if (cur->key == k)
-            return cur;
+            return MyIterator{cur};
         else
             cur = cur->right;
     }
 
-    return nil;
+    return MyIterator{nil};
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(const int k) const
+AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::find_by_number(const int k) const
 {
     if ((root == nil || k > root->size || k <= 0))
     {
@@ -371,7 +458,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(const int k) const
             std::cout << "Invalid number: " << k << "\n";
             std::cout << "Size of tree: " << root->size << "\n";
         #endif
-        return nil;
+        return MyIterator{nil};
     }
 
     int m = k;
@@ -392,7 +479,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::find_by_number(const int k) const
         }
     }
 
-    return cur;
+    return MyIterator{cur};
 }
 
 template <typename T, typename Comp>
@@ -508,5 +595,23 @@ int AVLTree<T, Comp>::TreeDump() const
     return 0;
 }
 
+template <typename T, typename Comp>
+AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::begin() 
+{
+    AVLNode* cur = root;
+
+    while(cur->left != nil)
+    {
+        cur = cur->left;
+    }
+
+    return MyIterator{cur};
 }
 
+template <typename T, typename Comp>
+AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::end()
+{
+    return MyIterator{nil};
+} 
+
+}
