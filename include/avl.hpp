@@ -8,10 +8,10 @@
 namespace avl
 {
 template <typename T, typename Comp = std::less<T>>
-class AVLTree
+class AVLTree final
 {
 private:
-    struct AVLNode
+    struct AVLNode final
     {
         T key;
         int height; // height of max subtree + 1
@@ -19,7 +19,7 @@ private:
         AVLNode *parent, *left, *right;
     };
 
-    class MyIterator// pseudo iterator for encapsulating pointers
+    class MyIterator final// pseudo iterator for encapsulating pointers
     {
     private:
         AVLNode *node;
@@ -144,7 +144,7 @@ private:
     void TreeDraw(const AVLNode* const node, FILE* const graph_file) const; //for debugging
 public:
     MyIterator insert(const T& k);// inserts element in tree, returns iterator 
-    //to new element. If element has already been inserted than do nothing ans returns iterator to this element
+    //to new element. If element has already been inserted than do nothing anв returns iterator to this element
     MyIterator find(const T& k) const;
     //returns iterator to element with key k, if there is no element with such key, returns nil
     MyIterator find_by_number(const int k) const;
@@ -400,7 +400,7 @@ AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::insert(const T& k)
 
         if (Comp()(k, cur->key))
             cur = cur->left;
-        else if (prev->key == k)
+        else if (cur->key == k)
                 return MyIterator{prev};
         else
             cur = cur->right;
