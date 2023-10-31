@@ -12,16 +12,23 @@
     cd build 
     cmake --build .
 ```
+Next instruction are made for level-01
 
-3. Execute file:
+3. Executing file:
 ```
-./avl
+./level-01
 ```
 
 ## Tests
-To start testing move to `tests` directory and run:
+To start testing move to `end-to-end` directory and run:
 ```
 ./test.sh
+```
+
+## Comparing
+To start comparing AVL tree and std::set move to `comparing` directory and run:
+```
+./compare.sh
 ```
 
 ## Unit tests

@@ -7,11 +7,9 @@ BLUE='\033[0;34m'
 
 echo -e "${GREEN}Comparing has started!${NC}"
 echo
-for file in ./*.in; do
+for file in ../end-to-end/*.in; do
     printf "%s\n" $file
-    printf "My set:\n"
-    time ../../build/level-01/level-01 < $file
-    printf "std::set:\n"
-    time ../../build/level-01/level-01-std-set < $file
+    ../../build/level-01/comparing/main-compare < $file
+    ../../build/level-01/comparing/std-set-compare < $file
     printf "\n" 
 done

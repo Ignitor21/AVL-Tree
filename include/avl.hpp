@@ -5,12 +5,6 @@
 #include <cstdlib>
 #include <functional>
 
-/* TO-DO:
-- comments
-- unit-tests for big five
-- update comapring script
-*/
-
 namespace avl
 {
 template <typename T, typename Comp = std::less<T>>
@@ -25,12 +19,12 @@ private:
         AVLNode *parent, *left, *right;
     };
 
-    class MyIterator
+    class MyIterator// pseudo iterator for encapsulating pointers
     {
     private:
         AVLNode *node;
     public:
-        MyIterator(AVLNode* ptr) : node(ptr) {}
+        explicit MyIterator(AVLNode* ptr) : node(ptr) {}
 
         const T& operator*() const
         {
@@ -113,6 +107,7 @@ private:
     AVLNode* nil;
     AVLNode* root;
 public:
+// big five
     AVLTree();
     ~AVLTree();
     AVLTree(const AVLTree& other);
@@ -146,14 +141,19 @@ private:
     AVLNode* rotate_right(AVLNode* const a);
     AVLNode* rotate_left(AVLNode* const a);
     AVLNode* balance(AVLNode* p);
-    void TreeDraw(const AVLNode* const node, FILE* const graph_file) const;
+    void TreeDraw(const AVLNode* const node, FILE* const graph_file) const; //for debugging
 public:
-    MyIterator insert(const T& k);
+    MyIterator insert(const T& k);// inserts element in tree, returns iterator 
+    //to new element. If element has already been inserted than do nothing ans returns iterator to this element
     MyIterator find(const T& k) const;
+    //returns iterator to element with key k, if there is no element with such key, returns nil
     MyIterator find_by_number(const int k) const;
+    //finds the biggest k-th element in tree. If k <= 0 or k > size of tree, returns nil 
     int less_than(const T& k) const;
+    // returns number of element with key that less than k 
     int distance(const T& lower_bound, const T& upper_bound) const;
-    int TreeDump() const;
+    //returns number of elements that displaced between lower_bound and upper_bound inclusively. If lower_bound <= upper_bound, returns 0;
+    int TreeDump() const; // wrapper for TreeDraw()
     MyIterator begin();
     MyIterator end();
 };
@@ -552,9 +552,6 @@ int AVLTree<T, Comp>::distance(const T& lower_bound, const T& upper_bound) const
         }
     }
 
-    if (is_inverse)
-        std::swap(lb, ub);
-        
     return ans;
 }
 

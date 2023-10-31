@@ -23,5 +23,4 @@ enable_testing()
 
 include_directories(include)
 add_subdirectory(level-01)
-add_subdirectory(level-02)
 add_subdirectory(unit-tests)
