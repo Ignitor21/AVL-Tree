@@ -21,6 +21,4 @@ find_package(Threads REQUIRED)
 find_package(GTest REQUIRED)
 enable_testing()
 
-include_directories(include)
 add_subdirectory(level-01)
-add_subdirectory(unit-tests)
