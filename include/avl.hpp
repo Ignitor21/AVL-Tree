@@ -107,6 +107,7 @@ public:
 
 private:
     AVLNode* parent(AVLNode* const node) const;
+    bool is_leaf(const AVLNode* const node) const;
     int balance_factor(const AVLNode* const node) const;
     void fix_height(AVLNode* const node);
     void fix_size(AVLNode* const node);
@@ -140,64 +141,11 @@ AVLTree<T, Comp>::AVLTree() : nil(new AVLNode{T{}, 0, 0, nullptr, nullptr, true,
 template <typename T, typename Comp>
 AVLTree<T, Comp>::~AVLTree()
 {
-    AVLNode* cur = root;
-    if (root == nil)
-    {
-        delete nil;
-    }
-
-    while (cur->left != nil)
-    {
-        cur = cur->left;
-    }
-
-    cur = cur->right;
-
-    if(cur->rthread)
-    {
-        AVLNode *next = cur->right;
-        delete cur;
-    }
-    
-    while (!next->lthread)
-    {
-        next = next->left;
-    }
 }
 
 template <typename T, typename Comp>
 AVLTree<T, Comp>::AVLTree(const AVLTree& other)
 {
-    nil = new AVLNode{T{}, 0, 0, nullptr, nullptr, nullptr};
-    nil->parent = nil;
-    nil->left = nil;
-    nil->right = nil;
-
-    AVLNode* other_cur = other.root;
-    root = new AVLNode{other_cur->key, other_cur->height, other_cur->size, nil, nil, nil};
-    AVLNode *cur = root, *other_nil = other.nil;
-
-    while(other_cur != other.nil)
-    {
-        if (other_cur->left != other_nil && cur->left == nil)
-        {
-            cur->left = new AVLNode{other_cur->left->key, other_cur->left->height, other_cur->left->size, cur, nil, nil};
-            other_cur = other_cur->left;
-            cur = cur->left; 
-        }
-
-        else if (other_cur->right != other_nil && cur->right == nil)
-        {
-            cur->right = new AVLNode{other_cur->right->key, other_cur->right->height, other_cur->right->size, cur, nil, nil};
-            other_cur = other_cur->right;
-            cur = cur->right;
-        }
-        else
-        {
-            other_cur = other_cur->parent;
-            cur = cur->parent;
-        }
-    }
 }
 
 template <typename T, typename Comp>
@@ -207,6 +155,12 @@ AVLTree<T, Comp>::AVLTree(AVLTree&& other)
     nil = other.nil;
     other.root = nullptr;
     other.nil = nullptr;
+}
+
+template <typename T, typename Comp>
+bool AVLTree<T, Comp>::is_leaf(const AVLNode* const node) const
+{
+    return (node->lthread && node->rthread);
 }
 
 template <typename T, typename Comp>
@@ -327,17 +281,17 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::balance(AVLNode* p)
     int bf = balance_factor(p);
     if(bf == 2)
     {
-        int fst_height = p->left->rthread ? 1 : p->left->right->height;
-        int snd_height = p->left->lthread ? 1 : p->left->left->height;
-        if (fst_height > snd_height) // change names of variables
+        int c_height = p->left->rthread ? 0 : p->left->right->height;
+        int L_height = p->left->lthread ? 0 : p->left->left->height;
+        if (c_height > L_height)
             p->left = rotate_left(p->left); //big right rotation
         p = rotate_right(p);
     }
 
     if(bf == -2)
     {
-        int c_height = p->right->lthread ? 1 : p->right->left->height;
-        int R_height = p->right->rthread ? 1 : p->right->right->height;
+        int c_height = p->right->lthread ? 0 : p->right->left->height;
+        int R_height = p->right->rthread ? 0 : p->right->right->height;
         if (c_height > R_height)
             p->right = rotate_right(p->right); //big left rotation
         p = rotate_left(p);
@@ -362,7 +316,6 @@ void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, FILE* const graph_fil
             fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"green\", style=dotted];\n", node, node->left);
         else
             fprintf(graph_file, "  \"%p\" -> \"%s\" [color = \"green\", style=dotted];\n", node, "nil");
-
     }
 
     if (!node->rthread)
@@ -446,7 +399,6 @@ AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::insert(const T& key)
         fix_height(prev);
         fix_size(prev);
         prev = balance(prev);
-        //TreeDump();
         prev = parent(prev);
     }
     
@@ -541,36 +493,56 @@ int AVLTree<T, Comp>::distance(const T& lower_bound, const T& upper_bound) const
     if (is_inverse)
         std::swap(lb, ub);
 
-    while(cur != nil)
+    for(;;)
     {
         if (Comp()(cur->key, ub))
-            cur = cur->right;
+        {
+            if (!cur->rthread)
+                cur = cur->right;
+            else
+                break;
+        }
         else if (cur->key == ub)
         {
-            ans -= cur->right->size;
+            if (!cur->rthread)
+                ans -= cur->right->size;
             break;
         }
         else
         {
-            ans -= cur->right->size + 1;
-            cur = cur->left;
+            if (!cur->rthread)
+                ans -= cur->right->size + 1;
+            if (!cur->lthread)
+                cur = cur->left;
+            else
+                break;
         }    
     }
 
     cur = root;
-    while (cur != nil)
+    for (;;)
     {
         if (Comp()(lb, cur->key))
-            cur = cur->left;
+        {
+            if (!cur->lthread)
+                cur = cur->left;
+            else
+                break;
+        }
         else if (lb == cur->key)
         {
-            ans -= cur->left->size;
+            if (!cur->lthread)
+                ans -= cur->left->size;
             break;
         }
         else
         {
-            ans -= cur->left->size + 1;
-            cur = cur->right;
+            if (!cur->lthread)
+                ans -= cur->left->size + 1;
+            if (!cur->rthread)
+                cur = cur->right;
+            else
+                break;
         }
     }
 

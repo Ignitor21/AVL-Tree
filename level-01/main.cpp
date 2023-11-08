@@ -25,7 +25,7 @@ int main()
         {
             int lb{}, ub{};
             std::cin >> lb >> ub;
-            std::cout << 
+            //std::cout << tree.distance(lb, ub) << ' ';
             break;
         }
         default:
