@@ -9,7 +9,6 @@ int main()
 {
     AVLTree<int, std::less<int>> tree{};
     char command{};
-
     while(std::cin >> command)
     {
         switch (command)
@@ -19,13 +18,14 @@ int main()
             int n{};
             std::cin >> n;
             tree.insert(n);
+            //tree.TreeDump();
             break;
         }
         case 'q':
         {
             int lb{}, ub{};
             std::cin >> lb >> ub;
-            std::cout << tree.distance(lb, ub) << ' ';
+            std::cout << 
             break;
         }
         default:
@@ -34,6 +34,9 @@ int main()
             break;
         }
     }
+
+    for(auto it = tree.begin(), end = tree.end(); it != end; ++it)
+        std::cout << *it << ' ';
     std::cout << "\n";
     return 0;
 }
