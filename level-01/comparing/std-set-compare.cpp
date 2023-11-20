@@ -1,8 +1,6 @@
 #include <iostream>
-#include <vector>
 #include <ctime>
 #include <set>
-#include <iterator>
 
 int main()
 {
@@ -27,7 +25,7 @@ int main()
             std::cin >> lb >> ub;
             if (lb >= ub)
                 break;
-            int volatile ans = std::distance(s.lower_bound(lb), s.upper_bound(ub));
+            volatile int ans = std::distance(s.lower_bound(lb), s.upper_bound(ub));
             break;
         }
         default:
@@ -38,6 +36,6 @@ int main()
     }
 
     clock_t fin = clock();
-    printf("Time of std::set work: %lg s\n", (static_cast<double>(fin - start))/CLOCKS_PER_SEC);
+    std::cout << "Time of std::set work: " << (static_cast<double>(fin - start))/CLOCKS_PER_SEC << "s\n";
     return 0;
 }

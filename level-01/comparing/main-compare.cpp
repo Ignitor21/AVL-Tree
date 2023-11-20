@@ -38,6 +38,6 @@ int main()
     }
 
     clock_t fin = clock();
-    printf("Time of AVL tree work: %lg s\n", (static_cast<double>(fin - start))/CLOCKS_PER_SEC);
+    std::cout << "Time of AVL tree work: " << (static_cast<double>(fin - start))/CLOCKS_PER_SEC << "s\n";
     return 0;
 }

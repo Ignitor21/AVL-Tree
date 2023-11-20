@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <utility>
 #include <gtest/gtest.h>
-
 #include "avl.hpp"
 
 using namespace avl;
@@ -91,122 +90,8 @@ TEST(AVL_FUNCTIONS, distance)
     EXPECT_EQ(2, tree.distance(19, 28));
 }
 
-TEST(ITERATORS, traverse)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
-
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    std::vector<int> expected_ans {2, 7, 10, 14, 20, 27, 30, 50};
-    std::vector<int> ans;
-
-    for (auto it = tree.begin(), end = tree.end(); it != end; ++it)
-        ans.push_back(*it);
-
-    EXPECT_EQ(ans, expected_ans);
-}
-
-TEST(BIG_FIVE, copy_constructor)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
-
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    AVLTree<int> new_tree {tree};
-
-    std::vector<int> expected_ans {2, 7, 10, 14, 20, 27, 30, 50};
-    std::vector<int> ans;
-
-    for (auto it = new_tree.begin(), end = new_tree.end(); it != end; ++it)
-        ans.push_back(*it);
-    
-    EXPECT_EQ(expected_ans, ans);
-}
-
-TEST(BIG_FIVE, move_constructor)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
-
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-
-    std::vector<int> expected_ans;
-
-    for (auto it = tree.begin(), end = tree.end(); it != end; ++it)
-        expected_ans.push_back(*it);
-
-    AVLTree<int> new_tree = std::move(tree);
-    std::vector<int> ans;
-
-    for (auto it = new_tree.begin(), end = new_tree.end(); it != end; ++it)
-        ans.push_back(*it);
-    
-    EXPECT_EQ(expected_ans, ans);
-}
-
-TEST(BIG_FIVE, copy_assignment)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
-
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    AVLTree<int> new_tree;
-    new_tree = tree;
-
-    std::vector<int> expected_ans;
-    std::vector<int> ans;
-
-    for (auto it = tree.begin(), end = tree.end(); it != end; ++it)
-        expected_ans.push_back(*it);
-
-    for (auto it = new_tree.begin(), end = new_tree.end(); it != end; ++it)
-        ans.push_back(*it);
-    
-    EXPECT_EQ(expected_ans, ans);
-}
-
-TEST(BIG_FIVE, move_assignment)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{20, 10, 30, 2, 14, 27, 50, 7};
-
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    std::vector<int> expected_ans;
-    for (auto it = tree.begin(), end = tree.end(); it != end; ++it)
-        expected_ans.push_back(*it);
-
-    AVLTree<int> new_tree;
-    new_tree = std::move(tree);
-
-    std::vector<int> ans;
-    for (auto it = new_tree.begin(), end = new_tree.end(); it != end; ++it)
-        ans.push_back(*it);
-    
-    EXPECT_EQ(expected_ans, ans);
-}
-
 int main(int argc, char** argv)
 {   
-    ::testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

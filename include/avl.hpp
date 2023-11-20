@@ -37,72 +37,9 @@ private:
             return node->key;
         }
 
-        MyIterator& operator++()
-        {
-            if (node->right->size != 0)
-            {
-                node = node->right;
-
-                while(node->left->size != 0)
-                    node = node->left;
-            }
-            else
-            {
-                while(node->parent->size != 0 && node->parent->right == node)
-                {
-                    node = node->parent;
-                }
-                node = node->parent;
-            }
-
-            return *this;
-        }
-
-        MyIterator operator++(int)
-        {
-            MyIterator tmp{*this};
-            ++(*this);
-            return tmp;
-        }
-
-        MyIterator& operator--()
-        {
-            if (node->left->size != 0)
-            {
-                node = node->left;
-
-                while(node->right->size != 0)
-                    node = node->right;
-            }
-            else
-            {
-                while(node->parent->size != 0 && node->parent->left == node)
-                {
-                    node = node->parent;
-                }
-                node = node->parent;
-            }
-
-            return *this;
-        }
-
-        MyIterator operator--(int)
-        {
-            MyIterator tmp{*this};
-            --(*this);
-            return tmp;
-        }
-
-        bool operator ==(const MyIterator& rhs) const
-        {
-            return (node == rhs.node);
-        }
-
-        bool operator !=(const MyIterator& rhs) const
-        {
-            return (node != rhs.node);
-        }
-    };          
+        friend bool operator== (const MyIterator& lhs, const MyIterator& rhs) = default;
+        friend bool operator!= (const MyIterator& lhs, const MyIterator& rhs) = default;
+    };  
 
     AVLNode* nil;
     AVLNode* root;
@@ -144,7 +81,7 @@ private:
     void TreeDraw(const AVLNode* const node, FILE* const graph_file) const; //for debugging
 public:
     MyIterator insert(const T& k);// inserts element in tree, returns iterator 
-    //to new element. If element has already been inserted than do nothing anв returns iterator to this element
+    //to new element. If element has already been inserted than do nothing and returns iterator to this element
     MyIterator find(const T& k) const;
     //returns iterator to element with key k, if there is no element with such key, returns nil
     MyIterator find_by_number(const int k) const;
@@ -152,7 +89,7 @@ public:
     int less_than(const T& k) const;
     // returns number of element with key that less than k 
     int distance(const T& lower_bound, const T& upper_bound) const;
-    //returns number of elements that displaced between lower_bound and upper_bound inclusively. If lower_bound <= upper_bound, returns 0;
+    //returns number of elements that displaced between lower_bound and upper_bound inclusively. If lower_bound <= upper_bound, returns 0
     int TreeDump() const; // wrapper for TreeDraw()
     MyIterator begin();
     MyIterator end();
@@ -453,13 +390,7 @@ template <typename T, typename Comp>
 AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::find_by_number(const int k) const
 {
     if ((root == nil || k > root->size || k <= 0))
-    {
-        #if DEBUG
-            std::cout << "Invalid number: " << k << "\n";
-            std::cout << "Size of tree: " << root->size << "\n";
-        #endif
         return MyIterator{nil};
-    }
 
     int m = k;
     int p = -1;
