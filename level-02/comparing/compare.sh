@@ -9,7 +9,7 @@ echo -e "${GREEN}Comparing has started!${NC}"
 echo
 for file in ../end-to-end/*.in; do
     printf "%s\n" $file
-    ../../build/level-01/comparing/main-compare-01 < $file
-    ../../build/level-01/comparing/std-set-compare-01 < $file
+    ../../build/level-02/comparing/main-compare-02 < $file
+    ../../build/level-02/comparing/std-set-compare-02 < $file
     printf "\n" 
 done

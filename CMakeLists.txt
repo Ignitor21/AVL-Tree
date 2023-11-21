@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(avl LANGUAGES CXX)
+project(hwt LANGUAGES CXX)
 
 if (${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
     message(FATAL_ERROR "In-source build is forbidden")
@@ -23,4 +23,4 @@ enable_testing()
 
 include_directories(include)
 add_subdirectory(level-01)
-add_subdirectory(unit-tests)
+add_subdirectory(level-02)

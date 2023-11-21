@@ -6,27 +6,25 @@
 int main()
 {
     std::set<int> s{};
+    int n{};
     char command{};
     clock_t start = clock();
 
-    while(std::cin >> command)
+    while(std::cin >> command >> n)
     {
         switch (command)
         {
         case 'k':
-        {
-            int n{};
-            std::cin >> n;
             s.insert(n);
             break;
-        }
-        case 'q':
+        case 'm':
         {
-            int lb{}, ub{};
-            std::cin >> lb >> ub;
-            if (lb >= ub)
-                break;
-            volatile int ans = std::distance(s.lower_bound(lb), s.upper_bound(ub));
+            volatile auto it = std::next(s.begin(), n - 1);
+            break;
+        }
+        case 'n':
+        {
+            volatile int ans = std::distance(s.begin(), s.lower_bound(n));
             break;
         }
         default:
@@ -35,6 +33,7 @@ int main()
             break;
         }
     }
+
 
     clock_t fin = clock();
     std::cout << "Time of std::set work: " << (static_cast<double>(fin - start))/CLOCKS_PER_SEC << "s\n";
