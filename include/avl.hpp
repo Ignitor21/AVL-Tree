@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
+#include <stdexcept>
+#include <list>
 
 namespace avl
 {
@@ -30,25 +32,32 @@ private:
         {
             if (node->size == 0)
             {
-                std::cerr << "Bruh, man, stop dereferencing invalid pointers!\n";
-                abort();
+                throw std::invalid_argument("Dereferencing end-iterator\n");
             }
 
             return node->key;
         }
 
-        friend bool operator== (const MyIterator& lhs, const MyIterator& rhs) = default;
-        friend bool operator!= (const MyIterator& lhs, const MyIterator& rhs) = default;
+        bool operator== (const MyIterator& rhs) const
+        {
+            return (rhs.node == node);
+        }
+
+        bool operator!= (const MyIterator& rhs) const
+        {
+            return (rhs.node != node);
+        }
     };  
 
     AVLNode* nil;
     AVLNode* root;
+    std::list<AVLNode> nodes{};
 public:
-// big five
     AVLTree();
+// big five
     ~AVLTree();
     AVLTree(const AVLTree& other);
-    AVLTree(AVLTree&& other);
+    AVLTree(AVLTree&& other) noexcept;
 
     AVLTree& operator= (const AVLTree& other)
     {
@@ -58,16 +67,18 @@ public:
         AVLTree<T, Comp> tmp{other};
         std::swap(root, tmp.root);
         std::swap(nil, tmp.nil);
+        std::swap(nodes, tmp.nodes);
         return *this;
     }
 
-    AVLTree& operator= (AVLTree&& other)
+    AVLTree& operator= (AVLTree&& other) noexcept
     {
         if (this == &other)
             return *this;
 
         std::swap(root, other.root);
         std::swap(nil, other.nil);
+        std::swap(nodes, other.nodes);
         return *this;
     }
 
@@ -81,7 +92,7 @@ private:
     void TreeDraw(const AVLNode* const node, FILE* const graph_file) const; //for debugging
 public:
     MyIterator insert(const T& k);// inserts element in tree, returns iterator 
-    //to new element. If element has already been inserted than do nothing and returns iterator to this element
+    //to this new element. If element has already been inserted than do nothing and returns iterator to this element
     MyIterator find(const T& k) const;
     //returns iterator to element with key k, if there is no element with such key, returns nil
     MyIterator find_by_number(const int k) const;
@@ -89,14 +100,14 @@ public:
     int less_than(const T& k) const;
     // returns number of element with key that less than k 
     int distance(const T& lower_bound, const T& upper_bound) const;
-    //returns number of elements that displaced between lower_bound and upper_bound inclusively. If lower_bound <= upper_bound, returns 0
+    //returns number of elements that displaced between lower_bound and upper_bound inclusively. If lower_bound >= upper_bound, returns 0
     int TreeDump() const; // wrapper for TreeDraw()
     MyIterator begin();
     MyIterator end();
 };
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLTree() : nil(new AVLNode{T{}, 0, 0, nullptr, nullptr, nullptr}), root(nil) 
+AVLTree<T, Comp>::AVLTree() : nil(new AVLNode{T{}, 0, 0, nullptr, nullptr, nullptr}), root(nil), nodes{} 
 {
     nil->parent = nil;
     nil->left = nil;
@@ -105,30 +116,8 @@ AVLTree<T, Comp>::AVLTree() : nil(new AVLNode{T{}, 0, 0, nullptr, nullptr, nullp
 
 template <typename T, typename Comp>
 AVLTree<T, Comp>::~AVLTree()
-{
-    AVLNode* cur = root;
-
-    while(cur != nil)
-    {
-        if (cur->left != nil)
-            cur = cur->left;
-        else if (cur->right != nil)
-            cur = cur->right;
-        else
-        {
-            AVLNode* cur_parent = cur->parent;
-
-            if (cur == cur_parent->left)
-                cur_parent->left = nil;
-            else
-                cur_parent->right = nil;
-
-            delete cur;
-            cur = cur_parent;
-        }
-    }
-
-    delete nil;   
+{   
+    delete nil;
 }
 
 template <typename T, typename Comp>
@@ -147,15 +136,15 @@ AVLTree<T, Comp>::AVLTree(const AVLTree& other)
     {
         if (other_cur->left != other_nil && cur->left == nil)
         {
-            cur->left = new AVLNode{other_cur->left->key, other_cur->left->height, other_cur->left->size, cur, nil, nil};
             other_cur = other_cur->left;
+            cur->left = &nodes.emplace_back(AVLNode{other_cur->key, other_cur->height, other_cur->size, cur, nil, nil});
             cur = cur->left; 
         }
 
         else if (other_cur->right != other_nil && cur->right == nil)
         {
-            cur->right = new AVLNode{other_cur->right->key, other_cur->right->height, other_cur->right->size, cur, nil, nil};
             other_cur = other_cur->right;
+            cur->right = &nodes.emplace_back(AVLNode{other_cur->key, other_cur->height, other_cur->size, cur, nil, nil});
             cur = cur->right;
         }
         else
@@ -167,10 +156,11 @@ AVLTree<T, Comp>::AVLTree(const AVLTree& other)
 }
 
 template <typename T, typename Comp>
-AVLTree<T, Comp>::AVLTree(AVLTree&& other)
+AVLTree<T, Comp>::AVLTree(AVLTree&& other) noexcept
 {
     root = other.root;
     nil = other.nil;
+    nodes = std::move(other.nodes);
     other.root = nullptr;
     other.nil = nullptr;
 }
@@ -343,7 +333,7 @@ AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::insert(const T& k)
             cur = cur->right;
     }
 
-    cur = new AVLNode{k, 1, 1, nil, nil, nil};
+    cur = &nodes.emplace_back(AVLNode{k, 1, 1, nil, nil, nil});
 
     if(prev == nil)
     {
