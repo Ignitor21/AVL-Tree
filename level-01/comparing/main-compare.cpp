@@ -32,8 +32,7 @@ int main()
         }
         default:
             std::cerr << "Unknown command\n";
-            abort();
-            break;
+            return -1;
         }
     }
 

@@ -22,7 +22,16 @@ int main()
             break;
         case 'm':
         {
-            volatile auto it = tree.find_by_number(n);
+            try
+            {
+                volatile auto it = tree.find_by_number(n);
+            }
+
+            catch(const std::range_error& e)
+            {
+                std::cout << e.what();
+                return 1;
+            }
             break;
         }
         case 'n':
@@ -32,8 +41,7 @@ int main()
         }
         default:
             std::cerr << "Unknown command\n";
-            abort();
-            break;
+            return -1;
         }
     }
 

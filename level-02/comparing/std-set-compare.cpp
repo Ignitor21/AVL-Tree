@@ -19,6 +19,10 @@ int main()
             break;
         case 'm':
         {
+            if (n <= 0)
+                return 1;
+            if (n > s.size())
+                volatile auto iter = s.rbegin();
             volatile auto it = std::next(s.begin(), n - 1);
             break;
         }
@@ -29,8 +33,7 @@ int main()
         }
         default:
             std::cerr << "Unknown command\n";
-            abort();
-            break;
+            return -1;
         }
     }
 
