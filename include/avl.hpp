@@ -379,8 +379,20 @@ AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::find(const T& k) const
 template <typename T, typename Comp>
 AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::find_by_number(const int k) const
 {
-    if ((root == nil || k > root->size || k <= 0))
+    if (k <= 0)
+        throw std::range_error("Argument in find_by_number() must be positive\n");
+    if (root == nil)
         return MyIterator{nil};
+    if (k > root->size)
+    {
+        AVLNode* cur{root};
+        while (cur->right != nil)
+        {
+            cur = cur->right;
+        }
+
+        return MyIterator{cur};
+    }
 
     int m = k;
     int p = -1;

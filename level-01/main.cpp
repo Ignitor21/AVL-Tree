@@ -30,10 +30,10 @@ int main()
         }
         default:
             std::cerr << "Unknown command\n";
-            abort();
-            break;
+            return -1;
         }
     }
+    
     std::cout << "\n";
     return 0;
 }

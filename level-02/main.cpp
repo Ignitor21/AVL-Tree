@@ -20,11 +20,18 @@ int main()
             break;
         case 'm':
         {
-            auto it = tree.find_by_number(n);
-            if (it != tree.end())
-                std::cout << *it << ' ';
-            else
-                std::cout << "Invalid number\n";
+            try
+            {
+                auto it = tree.find_by_number(n);
+                if (it != tree.end())
+                    std::cout << *it << ' ';
+            }
+
+            catch(const std::range_error& e)
+            {
+                std::cout << e.what();
+                return 1;
+            }
             break;
         }
         case 'n':
@@ -32,8 +39,7 @@ int main()
             break;
         default:
             std::cerr << "Unknown command\n";
-            abort();
-            break;
+            return -1;
         }
     }
 
