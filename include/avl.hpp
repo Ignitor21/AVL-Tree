@@ -1,11 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
 #include <stdexcept>
 #include <list>
+#include <new>
 
 namespace avl
 {
@@ -89,7 +92,7 @@ private:
     AVLNode* rotate_right(AVLNode* const a);
     AVLNode* rotate_left(AVLNode* const a);
     AVLNode* balance(AVLNode* p);
-    void TreeDraw(const AVLNode* const node, FILE* const graph_file) const; //for debugging
+    void TreeDraw(const AVLNode* const node, std::ofstream& graph_file) const; //for debugging
 public:
     MyIterator insert(const T& k);// inserts element in tree, returns iterator 
     //to this new element. If element has already been inserted than do nothing and returns iterator to this element
@@ -129,9 +132,15 @@ AVLTree<T, Comp>::AVLTree(const AVLTree& other)
     nil->right = nil;
 
     AVLNode* other_cur = other.root;
-    root = new AVLNode{other_cur->key, other_cur->height, other_cur->size, nil, nil, nil};
-    AVLNode *cur = root, *other_nil = other.nil;
+    root = new (std::nothrow) AVLNode{other_cur->key, other_cur->height, other_cur->size, nil, nil, nil};
 
+    if (!root)
+    {
+        delete nil;
+        throw std::bad_alloc();
+    }   
+
+    AVLNode *cur = root, *other_nil = other.nil;
     while(other_cur != other.nil)
     {
         if (other_cur->left != other_nil && cur->left == nil)
@@ -266,7 +275,7 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::balance(AVLNode* p)
         p = rotate_right(p);
     }
 
-    if(bf == -2)
+    else if(bf == -2)
     {
         if (p->right->left->height > p->right->right->height)
             p->right = rotate_right(p->right); //big right rotation
@@ -276,36 +285,35 @@ AVLTree<T, Comp>::AVLNode* AVLTree<T, Comp>::balance(AVLNode* p)
 }
 
 template <typename T, typename Comp>
-void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, FILE* const graph_file) const
+void AVLTree<T, Comp>::TreeDraw(const AVLNode* const node, std::ofstream& graph_file) const
 {
-
-    fprintf(graph_file, "   \"%p\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
-                        "   label = \" <value> %d\"];\n", node, node->key);
+    graph_file << "   \"" << node << "\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\"," <<
+    "   label = \" <value> " << node->key << "\"];\n";
 
     if (node->left != nil)
     {
-        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"green\"];\n", node, node->left);
-        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"red\"];\n", node->left, node->left->parent);
+        graph_file << "  \"" << node << "\" -> \"" << node->left << "\" [color = \"green\"];\n";
+        graph_file << "  \"" << node->left << "\" -> \"" << node->left->parent << "\" [color = \"red\"];\n";
     }
 
     else if (node->left == nil)
     {
-        fprintf(graph_file, "   \"%p%s\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
-                            "   label = \" <value> %s\"];\n", node, "left", "nill");
-        fprintf(graph_file, "  \"%p\" -> \"%p%s\" [color = \"green\"];\n", node, node, "left");
+        graph_file << "   \"" << node << "left" << "\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
+                   << "   label = \" <value> " << "nil" << "\"];\n";
+        graph_file << "  \"" << node << "\" -> \"" << node << "left" << "\" [color = \"green\"];\n";
     }
 
     if (node->right != nil)
     {
-        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"green\"];\n", node, node->right);
-        fprintf(graph_file, "  \"%p\" -> \"%p\" [color = \"red\"];\n", node->right, node->right->parent);
+        graph_file << "  \"" << node << "\" -> \"" << node->right << "\" [color = \"green\"];\n";        
+        graph_file << "  \"" << node->right << "\" -> \"" << node->right->parent << "\" [color = \"red\"];\n";
     }
 
     else if (node->right == nil)
     {
-        fprintf(graph_file, "   \"%p%s\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
-                            "   label = \" <value> %s\"];\n", node, "right", "nill");
-        fprintf(graph_file, "  \"%p\" -> \"%p%s\" [color = \"green\"];\n", node, node, "right");
+        graph_file << "   \"" << node << "right" << "\"[shape = Mrecord, style = filled, fontcolor = \"white\", fillcolor = \"black\","
+                   << "   label = \" <value> " << "nil" << "\"];\n";
+        graph_file << "  \"" << node << "\" -> \"" << node << "right" << "\" [color = \"green\"];\n";
     }
 
     if (node->left != nil)
@@ -355,6 +363,7 @@ AVLTree<T, Comp>::MyIterator AVLTree<T, Comp>::insert(const T& k)
         prev = balance(prev);
         prev = prev->parent;
     }
+
     return MyIterator{cur};
 }
 
@@ -491,35 +500,29 @@ int AVLTree<T, Comp>::distance(const T& lower_bound, const T& upper_bound) const
 template <typename T, typename Comp>
 int AVLTree<T, Comp>::TreeDump() const
 {
+    std::ofstream graph_file {"../../graphics/graph.dot"};
 
-    FILE *graph_file = fopen("../../graphics/graph.dot", "w");
-
-    if (graph_file == nullptr)
+    if (!graph_file.is_open())
     {
-        std::cerr << "Failed openning graph file in " << __PRETTY_FUNCTION__ << std::endl;
+        std::cerr << "Failed openning graph file in " << __PRETTY_FUNCTION__ << "\n";
         return -1; 
     }
 
-    fprintf(graph_file, "digraph Tree\n{\n");
-    fprintf(graph_file, "   rankdir = HR;\n");
-    fprintf(graph_file, "   node[fontsize=14];\n   edge[color=\"black\",fontcolor=\"blue\",fontsize=12];\n");
-    fprintf(graph_file, "   tree[shape = Mrecord, style = filled, fillcolor = \"chartreuse1\", "
-                        "label = \"My Tree | size = %u\"];\n", root->size);
+    graph_file << "digraph Tree\n{\n";
+    graph_file << "   rankdir = HR;\n";
+    graph_file << "   node[fontsize=14];\n   edge[color=\"black\",fontcolor=\"blue\",fontsize=12];\n";
+    graph_file << "   tree[shape = Mrecord, style = filled, fillcolor = \"chartreuse1\", " <<
+                  "label = \"My Tree | size = " << root->size << "\"];\n";
     TreeDraw(root, graph_file);
-    fprintf(graph_file, "   tree -> \"%p\" [color = \"gray0\"];\n", root);
-    fprintf(graph_file, "}");
+    graph_file << "   tree -> \"" << root << "\" [color = \"gray0\"];\n";
+    graph_file << "}";
 
-    if (fclose(graph_file) == EOF)
-    {
-        std::cerr << "Failed closing graph.dot in function " << __PRETTY_FUNCTION__ << std::endl;
-        return -1;
-    }
-
-    char call_graph[100] = " ";
+    graph_file.close();
 
     static int graph_num = 1;
-    sprintf(call_graph, "dot ../../graphics/graph.dot -Tpng -o ../../graphics/graph%d.png", graph_num++);
+    std::string tmp = "dot ../../graphics/graph.dot -Tpng -o ../../graphics/graph" + std::to_string(graph_num++) + ".png";
     
+    const char *call_graph = tmp.c_str();
     std::system(call_graph);
 
     return 0;

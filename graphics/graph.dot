@@ -1,0 +1,28 @@
+digraph Tree
+{
+   rankdir = HR;
+   node[fontsize=14];
+   edge[color="black",fontcolor="blue",fontsize=12];
+   tree[shape = Mrecord, style = filled, fillcolor = "chartreuse1", label = "My Tree | size = 4"];
+   "0x55c5a33faf00"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> 1"];
+  "0x55c5a33faf00" -> "0x55c5a33fb640" [color = "green"];
+  "0x55c5a33fb640" -> "0x55c5a33faf00" [color = "red"];
+  "0x55c5a33faf00" -> "0x55c5a33fb1f0" [color = "green"];
+  "0x55c5a33fb1f0" -> "0x55c5a33faf00" [color = "red"];
+   "0x55c5a33fb640"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> -2"];
+   "0x55c5a33fb640left"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> nil"];
+  "0x55c5a33fb640" -> "0x55c5a33fb640left" [color = "green"];
+  "0x55c5a33fb640" -> "0x55c5a33fb680" [color = "green"];
+  "0x55c5a33fb680" -> "0x55c5a33fb640" [color = "red"];
+   "0x55c5a33fb680"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> -1"];
+   "0x55c5a33fb680left"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> nil"];
+  "0x55c5a33fb680" -> "0x55c5a33fb680left" [color = "green"];
+   "0x55c5a33fb680right"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> nil"];
+  "0x55c5a33fb680" -> "0x55c5a33fb680right" [color = "green"];
+   "0x55c5a33fb1f0"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> 4"];
+   "0x55c5a33fb1f0left"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> nil"];
+  "0x55c5a33fb1f0" -> "0x55c5a33fb1f0left" [color = "green"];
+   "0x55c5a33fb1f0right"[shape = Mrecord, style = filled, fontcolor = "white", fillcolor = "black",   label = " <value> nil"];
+  "0x55c5a33fb1f0" -> "0x55c5a33fb1f0right" [color = "green"];
+   tree -> "0x55c5a33faf00" [color = "gray0"];
+}

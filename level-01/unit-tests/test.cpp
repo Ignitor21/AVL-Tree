@@ -60,39 +60,3 @@ int main(int argc, char** argv)
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-
-
-TEST(AVL_FUNCTIONS, find_by_number)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
-    // 1 8 9 13 15 21 28 32 36 88
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    EXPECT_EQ(28, *(tree.find_by_number(7)));
-    EXPECT_EQ(88, *(tree.find_by_number(10)));
-    EXPECT_EQ(1, *(tree.find_by_number(1)));
-    EXPECT_EQ(tree.end(), tree.find_by_number(15));
-    EXPECT_EQ(tree.end(), tree.find_by_number(-777));
-    EXPECT_EQ(tree.end(), tree.find_by_number(0));
-}
-
-TEST(AVL_FUNCTIONS, less_than)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
-
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    EXPECT_EQ(7, tree.less_than(32));
-    EXPECT_EQ(8, tree.less_than(33));
-    EXPECT_EQ(10, tree.less_than(100));
-    EXPECT_EQ(0, tree.less_than(-5));
-    EXPECT_EQ(4, tree.less_than(15));
-}

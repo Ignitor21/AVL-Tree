@@ -21,24 +21,6 @@ TEST(AVL_FUNCTIONS, insert)
     EXPECT_EQ(*n4, 21); 
 }
 
-TEST(AVL_FUNCTIONS, find_by_number)
-{
-    AVLTree<int> tree{};
-    std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
-    // 1 8 9 13 15 21 28 32 36 88
-    for (const auto& x: input)
-    {
-        tree.insert(x);
-    }
-
-    EXPECT_EQ(28, *(tree.find_by_number(7)));
-    EXPECT_EQ(88, *(tree.find_by_number(10)));
-    EXPECT_EQ(1, *(tree.find_by_number(1)));
-    EXPECT_EQ(tree.end(), tree.find_by_number(15));
-    EXPECT_EQ(tree.end(), tree.find_by_number(-777));
-    EXPECT_EQ(tree.end(), tree.find_by_number(0));
-}
-
 TEST(AVL_FUNCTIONS, find)
 {
     AVLTree<int> tree{};
@@ -52,6 +34,24 @@ TEST(AVL_FUNCTIONS, find)
     EXPECT_EQ(n2, tree.find(228));
     EXPECT_EQ(tree.end(), tree.find(1488));
     EXPECT_EQ(n3, tree.find(-1));
+}
+
+TEST(AVL_FUNCTIONS, find_by_number)
+{
+    AVLTree<int> tree{};
+    std::vector<int> input{21, 28, 32, 15, 13, 88, 36, 8, 9, 1};
+    // 1 8 9 13 15 21 28 32 36 88
+    for (const auto& x: input)
+    {
+        tree.insert(x);
+    }
+
+    EXPECT_EQ(28, *(tree.find_by_number(7)));
+    EXPECT_EQ(88, *(tree.find_by_number(10)));
+    EXPECT_EQ(1, *(tree.find_by_number(1)));
+    EXPECT_EQ(88, *(tree.find_by_number(15)));
+    EXPECT_THROW(tree.find_by_number(-777), std::range_error);
+    EXPECT_THROW(tree.find_by_number(0), std::range_error);
 }
 
 TEST(AVL_FUNCTIONS, less_than)
