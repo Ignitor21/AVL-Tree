@@ -32,8 +32,6 @@ int main()
             std::cerr << "Unknown command\n";
             return -1;
         }
-
-        tree.TreeDump();
     }
     
     std::cout << "\n";
